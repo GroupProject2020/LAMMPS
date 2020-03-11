@@ -66,6 +66,7 @@ void PairSPHTaitwater::compute(int eflag, int vflag) {
   double *mass = atom->mass;
   double *de = atom->de;
   double *drho = atom->drho;
+  double *e = atom->e;
   int *type = atom->type;
   int nlocal = atom->nlocal;
   int newton_pair = force->newton_pair;
@@ -154,15 +155,23 @@ void PairSPHTaitwater::compute(int eflag, int vflag) {
         // dot product of velocity delta and distance vector
         delVdotDelR = delx * (vxtmp - v[j][0]) + dely * (vytmp - v[j][1])
             + delz * (vztmp - v[j][2]);
-
+/*
         // artificial viscosity (Monaghan 1992)
         if (delVdotDelR < 0.) {
           mu = h * delVdotDelR / (rsq + 0.01 * h * h);
           fvisc = -viscosity[itype][jtype] * (soundspeed[itype]
               + soundspeed[jtype]) * mu / (rho[i] + rho[j]);
+
         } else {
           fvisc = 0.;
-        }
+        }*/
+        /* The formulae of the temperature is way off, but at least this shows us the effect of a varying viscosity force*/
+        // Power-low viscosity
+        //fvisc = 4e-3*pow(e[nlocal]/4.185,2/3);
+
+        // Power-low 2
+        fvisc = 1.716e-2*pow(e[nlocal]/(4.185*273),2/3);
+        //printf(" %lf", e[nlocal]/4.185);
 
         // total pair force & thermal energy increment
         fpair = -imass * jmass * (fi + fj + fvisc) * wfd;

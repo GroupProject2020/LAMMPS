@@ -1,3 +1,5 @@
-build/
+build/*
+.idea/
 *.html
 *.pdf
+cmake/cmake-build-debug/*

@@ -1,4 +1,4 @@
-# Install script for directory: /home/wall-e/Cranfield/GroupProject/mylammps/lammps/cmake
+# Install script for directory: /home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/cmake
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -44,7 +44,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/lmp"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" TYPE EXECUTABLE FILES "/home/wall-e/Cranfield/GroupProject/mylammps/lammps/cmake/cmake-build-debug/lmp")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" TYPE EXECUTABLE FILES "/home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/cmake/cmake-build-debug/lmp")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/lmp" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/lmp")
     file(RPATH_CHANGE
@@ -58,7 +58,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/man/man1" TYPE FILE RENAME "lmp.1" FILES "/home/wall-e/Cranfield/GroupProject/mylammps/lammps/doc/lammps.1")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/man/man1" TYPE FILE RENAME "lmp.1" FILES "/home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/doc/lammps.1")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
@@ -70,13 +70,13 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/home/wall-e/.local/share/lammps" TYPE DIRECTORY FILES "/home/wall-e/Cranfield/GroupProject/mylammps/lammps/potentials")
+file(INSTALL DESTINATION "/home/wall-e/.local/share/lammps" TYPE DIRECTORY FILES "/home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/potentials")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/etc/profile.d" TYPE FILE FILES
-    "/home/wall-e/Cranfield/GroupProject/mylammps/lammps/cmake/cmake-build-debug/etc/profile.d/lammps.sh"
-    "/home/wall-e/Cranfield/GroupProject/mylammps/lammps/cmake/cmake-build-debug/etc/profile.d/lammps.csh"
+    "/home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/cmake/cmake-build-debug/etc/profile.d/lammps.sh"
+    "/home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/cmake/cmake-build-debug/etc/profile.d/lammps.csh"
     )
 endif()
 
@@ -88,5 +88,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/wall-e/Cranfield/GroupProject/mylammps/lammps/cmake/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/cmake/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
