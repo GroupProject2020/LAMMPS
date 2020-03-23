@@ -1,9 +1,0 @@
-/home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/cmake/cmake-build-debug/CMakeFiles/install/strip.dir
-/home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/cmake/cmake-build-debug/CMakeFiles/install/local.dir
-/home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/cmake/cmake-build-debug/CMakeFiles/install.dir
-/home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/cmake/cmake-build-debug/CMakeFiles/gitversion.dir
-/home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/cmake/cmake-build-debug/CMakeFiles/install-python.dir
-/home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/cmake/cmake-build-debug/CMakeFiles/lmp.dir
-/home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/cmake/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/cmake/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/wall-e/Cranfield/GroupProject/mylammps/LAMMPS/cmake/cmake-build-debug/CMakeFiles/list_install_components.dir
