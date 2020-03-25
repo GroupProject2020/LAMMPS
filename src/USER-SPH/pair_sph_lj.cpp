@@ -37,7 +37,6 @@ PairSPHLJ::~PairSPHLJ() {
     memory->destroy(cutsq);
 
     memory->destroy(cut);
-    memory->destroy(viscosity);
   }
 }
 
@@ -65,6 +64,7 @@ void PairSPHLJ::compute(int eflag, int vflag) {
   int *type = atom->type;
   int nlocal = atom->nlocal;
   int newton_pair = force->newton_pair;
+  Viscosity* viscosity = atom->viscosity;
 
   inum = list->inum;
   ilist = list->ilist;
@@ -140,7 +140,8 @@ void PairSPHLJ::compute(int eflag, int vflag) {
         // artificial viscosity (Monaghan 1992)
         if (delVdotDelR < 0.) {
           mu = h * delVdotDelR / (rsq + 0.01 * h * h);
-          fvisc = -viscosity[itype][jtype] * (ci + cj) * mu / (rho[i] + rho[j]);
+            double T = ((e[nlocal]-500)/(0.1*4117)+300);
+          fvisc = -viscosity->compute_visc(T) * (ci + cj) * mu / (rho[i] + rho[j]);
         } else {
           fvisc = 0.;
         }
@@ -192,7 +193,6 @@ void PairSPHLJ::allocate() {
   memory->create(cutsq, n + 1, n + 1, "pair:cutsq");
 
   memory->create(cut, n + 1, n + 1, "pair:cut");
-  memory->create(viscosity, n + 1, n + 1, "pair:viscosity");
 }
 
 /* ----------------------------------------------------------------------
@@ -220,13 +220,11 @@ void PairSPHLJ::coeff(int narg, char **arg) {
   force->bounds(FLERR,arg[0], atom->ntypes, ilo, ihi);
   force->bounds(FLERR,arg[1], atom->ntypes, jlo, jhi);
 
-  double viscosity_one = force->numeric(FLERR,arg[2]);
   double cut_one = force->numeric(FLERR,arg[3]);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
     for (int j = MAX(jlo,i); j <= jhi; j++) {
-      viscosity[i][j] = viscosity_one;
       printf("setting cut[%d][%d] = %f\n", i, j, cut_one);
       cut[i][j] = cut_one;
       setflag[i][j] = 1;
@@ -249,7 +247,6 @@ double PairSPHLJ::init_one(int i, int j) {
   }
 
   cut[j][i] = cut[i][j];
-  viscosity[j][i] = viscosity[i][j];
 
   return cut[i][j];
 }

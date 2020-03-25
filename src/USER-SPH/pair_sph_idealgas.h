@@ -35,7 +35,7 @@ class PairSPHIdealGas : public Pair {
   virtual double single(int, int, int, int, double, double, double, double &);
 
  protected:
-  double **cut,**viscosity;
+  double **cut;
 
   void allocate();
 };

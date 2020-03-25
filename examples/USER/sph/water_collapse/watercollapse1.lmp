@@ -35,7 +35,6 @@ compute            rho_peratom all meso/rho/atom
 compute            e_peratom all meso/e/atom
 compute            esph all reduce sum c_e_peratom
 compute            ke all ke
-#compute		   newTemp all edpd/temp/atom
 variable           etot equal c_esph+c_ke+f_gfix
 
 
@@ -58,6 +57,6 @@ thermo_modify      norm no lost warn
 neigh_modify       every 5 delay 0 check no
 variable           skin equal 0.3*${h}
 neighbor           ${skin} bin # set Verlet list skin distance
-viscosity	   FourParameterExp 1.856e-10 4209 0.04527 -3.376e-5
+viscosity	   FourParameterExp 1.856e-11 4209 0.04527 -3.376e-5
 
 run                ${nrun}

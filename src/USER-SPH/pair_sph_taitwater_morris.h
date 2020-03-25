@@ -35,7 +35,7 @@ class PairSPHTaitwaterMorris : public Pair {
 
  protected:
   double *rho0, *soundspeed, *B;
-  double **cut,**viscosity;
+  double **cut;
   int first;
 
   void allocate();

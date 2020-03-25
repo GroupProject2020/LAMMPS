@@ -43,7 +43,6 @@ PairSPHTaitwaterMorris::~PairSPHTaitwaterMorris() {
     memory->destroy(rho0);
     memory->destroy(soundspeed);
     memory->destroy(B);
-    memory->destroy(viscosity);
   }
 }
 
@@ -66,9 +65,11 @@ void PairSPHTaitwaterMorris::compute(int eflag, int vflag) {
   double *mass = atom->mass;
   double *de = atom->de;
   double *drho = atom->drho;
+  double *e = atom->e;
   int *type = atom->type;
   int nlocal = atom->nlocal;
   int newton_pair = force->newton_pair;
+  Viscosity* viscosity = atom->viscosity;
 
   // check consistency of pair coefficients
 
@@ -158,8 +159,8 @@ void PairSPHTaitwaterMorris::compute(int eflag, int vflag) {
         delVdotDelR = delx * velx + dely * vely + delz * velz;
 
         // Morris Viscosity (Morris, 1996)
-
-        fvisc = 2 * viscosity[itype][jtype] / (rho[i] * rho[j]);
+        double T = ((e[nlocal]-500)/(0.1*4117)+300);
+        fvisc = 2 * viscosity->compute_visc(T) / (rho[i] * rho[j]);
 
         fvisc *= imass * jmass * wfd;
 
@@ -215,7 +216,6 @@ void PairSPHTaitwaterMorris::allocate() {
   memory->create(soundspeed, n + 1, "pair:soundspeed");
   memory->create(B, n + 1, "pair:B");
   memory->create(cut, n + 1, n + 1, "pair:cut");
-  memory->create(viscosity, n + 1, n + 1, "pair:viscosity");
 }
 
 /* ----------------------------------------------------------------------
@@ -245,7 +245,6 @@ void PairSPHTaitwaterMorris::coeff(int narg, char **arg) {
 
   double rho0_one = force->numeric(FLERR,arg[2]);
   double soundspeed_one = force->numeric(FLERR,arg[3]);
-  double viscosity_one = force->numeric(FLERR,arg[4]);
   double cut_one = force->numeric(FLERR,arg[5]);
   double B_one = soundspeed_one * soundspeed_one * rho0_one / 7.0;
 
@@ -255,7 +254,6 @@ void PairSPHTaitwaterMorris::coeff(int narg, char **arg) {
     soundspeed[i] = soundspeed_one;
     B[i] = B_one;
     for (int j = MAX(jlo,i); j <= jhi; j++) {
-      viscosity[i][j] = viscosity_one;
       //printf("setting cut[%d][%d] = %f\n", i, j, cut_one);
       cut[i][j] = cut_one;
 
@@ -279,7 +277,6 @@ double PairSPHTaitwaterMorris::init_one(int i, int j) {
   }
 
   cut[j][i] = cut[i][j];
-  viscosity[j][i] = viscosity[i][j];
 
   return cut[i][j];
 }
