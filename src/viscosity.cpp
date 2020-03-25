@@ -2,7 +2,7 @@
 // Created by wall-e on 23/03/2020.
 //
 
-#include "Viscosity.h"
+#include "viscosity.h"
 
 using namespace LAMMPS_NS;
 

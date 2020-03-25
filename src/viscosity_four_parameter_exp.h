@@ -6,7 +6,7 @@
 #define LAMMPS_VISCOSITY_FOURPARAMETEREXP_H
 
 #include "math.h"
-#include "Viscosity.h"
+#include "viscosity.h"
 namespace LAMMPS_NS{
 
 class ViscosityFourParameterExp  : public Viscosity{

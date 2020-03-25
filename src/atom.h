@@ -15,7 +15,7 @@
 #define LMP_ATOM_H
 
 #include "pointers.h"
-#include "Viscosity.h"
+#include "viscosity.h"
 #include <map>
 #include <string>
 
