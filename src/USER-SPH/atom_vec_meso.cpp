@@ -46,7 +46,7 @@ AtomVecMeso::AtomVecMeso(LAMMPS *lmp) : AtomVec(lmp)
   atom->rho_flag = 1;
   atom->cv_flag = 1;
   atom->vest_flag = 1;
-  atom->viscosity_flag = 1;
+  //atom->viscosity_flag = 1;
 }
 
 /* ----------------------------------------------------------------------
@@ -70,7 +70,7 @@ void AtomVecMeso::grow(int n)
   x = memory->grow(atom->x, nmax, 3, "atom:x");
   v = memory->grow(atom->v, nmax, 3, "atom:v");
   f = memory->grow(atom->f, nmax*comm->nthreads, 3, "atom:f");
-  viscosity = memory->grow(atom->viscosity, 1, "atom:viscosity");
+  //viscosity = memory->grow(atom->viscosity, 1, "atom:viscosity");
 
   rho = memory->grow(atom->rho, nmax, "atom:rho");
   drho = memory->grow(atom->drho, nmax*comm->nthreads, "atom:drho");
@@ -101,7 +101,7 @@ void AtomVecMeso::grow_reset() {
   e = atom->e;
   de = atom->de;
   vest = atom->vest;
-  viscosity = atom->viscosity;
+  //viscosity = atom->viscosity;
   cv = atom->cv;
 }
 
@@ -754,7 +754,7 @@ int AtomVecMeso::pack_restart(int i, double *buf) {
   buf[m++] = vest[i][0];
   buf[m++] = vest[i][1];
   buf[m++] = vest[i][2];
-  buf[m++] = (*viscosity);
+  //buf[m++] = (*viscosity);
 
   if (atom->nextra_restart)
     for (int iextra = 0; iextra < atom->nextra_restart; iextra++)
@@ -793,7 +793,7 @@ int AtomVecMeso::unpack_restart(double *buf) {
   vest[nlocal][0] = buf[m++];
   vest[nlocal][1] = buf[m++];
   vest[nlocal][2] = buf[m++];
-  (*viscosity) = buf[m++];
+  //(*viscosity) = buf[m++];
 
   double **extra = atom->extra;
   if (atom->nextra_store) {
@@ -833,7 +833,7 @@ void AtomVecMeso::create_atom(int itype, double *coord) {
   vest[nlocal][0] = 0.0;
   vest[nlocal][1] = 0.0;
   vest[nlocal][2] = 0.0;
-  (*viscosity) = 0.0;
+  //(*viscosity) = 0.0;
   de[nlocal] = 0.0;
   drho[nlocal] = 0.0;
 
@@ -874,7 +874,7 @@ void AtomVecMeso::data_atom(double *coord, imageint imagetmp, char **values) {
   vest[nlocal][0] = 0.0;
   vest[nlocal][1] = 0.0;
   vest[nlocal][2] = 0.0;
-  (*viscosity) = 0.0;
+  //(*viscosity) = 0.0;
 
   de[nlocal] = 0.0;
   drho[nlocal] = 0.0;
@@ -914,7 +914,7 @@ void AtomVecMeso::pack_data(double **buf)
     buf[i][8] = ubuf((image[i] & IMGMASK) - IMGMAX).d;
     buf[i][9] = ubuf((image[i] >> IMGBITS & IMGMASK) - IMGMAX).d;
     buf[i][10] = ubuf((image[i] >> IMG2BITS) - IMGMAX).d;
-    buf[i][11] = (*viscosity);
+    //buf[i][11] = (*viscosity);
   }
 }
 
@@ -927,7 +927,7 @@ int AtomVecMeso::pack_data_hybrid(int i, double *buf)
   buf[0] = rho[i];
   buf[1] = e[i];
   buf[2] = cv[i];
-  buf[3] = (*viscosity);
+  //buf[3] = (*viscosity);
   return 3;
 }
 
@@ -970,7 +970,7 @@ int AtomVecMeso::property_atom(char *name)
   if (strcmp(name,"e") == 0) return 2;
   if (strcmp(name,"de") == 0) return 3;
   if (strcmp(name,"cv") == 0) return 4;
-  if (strcmp(name,"viscosity") == 0) return 5;
+  //if (strcmp(name,"viscosity") == 0) return 5;
   return -1;
 }
 
@@ -1052,8 +1052,8 @@ bigint AtomVecMeso::memory_usage() {
     bytes += memory->usage(cv, nmax);
   if (atom->memcheck("vest"))
     bytes += memory->usage(vest, nmax);
-  if (atom->memcheck("viscosity"))
-    bytes +=memory->usage(viscosity, nmax);
+  //if (atom->memcheck("viscosity"))
+  //  bytes +=memory->usage(viscosity, nmax);
 
   return bytes;
 }

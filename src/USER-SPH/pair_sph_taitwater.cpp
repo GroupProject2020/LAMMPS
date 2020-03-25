@@ -70,6 +70,7 @@ void PairSPHTaitwater::compute(int eflag, int vflag) {
   int *type = atom->type;
   int nlocal = atom->nlocal;
   int newton_pair = force->newton_pair;
+  Viscosity* viscosity = atom->viscosity;
 
   // check consistency of pair coefficients
 
@@ -158,31 +159,13 @@ void PairSPHTaitwater::compute(int eflag, int vflag) {
 
         // artificial viscosity (Monaghan 1992)
         if (delVdotDelR < 0.) {
-          // Original viscosity
-          //mu = h * delVdotDelR / (rsq + 0.01 * h * h);
-
-          //Example of viscosity 1
-          double T = ((e[nlocal]-500)/(0.1*4117)+300);
-          mu = 1.856e-11*exp(4209/T + 0.04527*T - 3.376e-5 *T*T);
-          fvisc = viscosity[itype][jtype] * (soundspeed[itype]
-             + soundspeed[jtype]) * mu / (rho[i] + rho[j]);
-
-
+            mu = h * delVdotDelR / (rsq + 0.01 * h * h);
+            double T = ((e[nlocal]-500)/(0.1*4117)+300);
+            //fvisc = viscosity->compute_visc(T) * (soundspeed[itype]+ soundspeed[jtype]) * mu / (rho[i] + rho[j]);
+            fvisc = viscosity[itype][jtype]) * (soundspeed[itype]+ soundspeed[jtype]) * mu / (rho[i] + rho[j]);
         } else {
           fvisc = 0.;
         }
-
-        //Example of viscosity 2
-        //  double T = ((e[nlocal]-500)/(0.1*4117)+300);
-        //  mu = 1.856e-10*exp(4209/T + 0.04527*T - 3.376e-5 *T*T);
-        //  fvisc = viscosity[itype][jtype] * (soundspeed[itype]
-        //                                     + soundspeed[jtype]) * mu / (rho[i] + rho[j]);
-
-        //Example of viscosity 3
-          //fvisc = 1.856e-11*exp(4209/T + 0.04527*T - 3.376e-5 *T*T);
-
-        //Example of viscosity 4
-        //fvisc = 0.4;
 
         // total pair force & thermal energy increment
         fpair = -imass * jmass * (fi + fj + fvisc) * wfd;

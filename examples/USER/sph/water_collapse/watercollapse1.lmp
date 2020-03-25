@@ -9,7 +9,7 @@ read_data          data.initial
 variable           h equal 0.03
 variable           c equal 10.0 # soundspeed for Tait's EOS
 variable           dt equal 0.1*${h}/${c} # upper limit of timestep based on CFL-like criterion
-variable           nrun equal 5000 # roughly estimate number of timesteps needed for 7.5 seconds
+variable           nrun equal 20000 # roughly estimate number of timesteps needed for 7.5 seconds
 
 group              bc    type 2 # assign group name "bc" to boundary particles (type 2)
 group              water type 1 # assign group name "water" to water particles (type 1)
@@ -35,6 +35,7 @@ compute            rho_peratom all meso/rho/atom
 compute            e_peratom all meso/e/atom
 compute            esph all reduce sum c_e_peratom
 compute            ke all ke
+#compute		   newTemp all edpd/temp/atom
 variable           etot equal c_esph+c_ke+f_gfix
 
 
@@ -48,14 +49,15 @@ fix                integrate_water_fix water meso
 
 # time-integrate only internal energy and density of boundary particles
 fix                integrate_bc_fix bc meso/stationary
-dump               dump_id all custom 100 dump.lammpstrj id type xs ys zs mass c_rho_peratom c_e_peratom fx fy v_tempe v_tempera 
+dump               dump_id all custom 100 dump.lammpstrj id type xs ys zs mass c_rho_peratom c_e_peratom fx fy v_tempe v_tempera
 dump_modify        dump_id first yes
 thermo             10
 thermo_style       custom step ke c_esph v_etot f_gfix press time f_dtfix
-thermo_modify      norm no
+thermo_modify      norm no lost warn
 
 neigh_modify       every 5 delay 0 check no
 variable           skin equal 0.3*${h}
 neighbor           ${skin} bin # set Verlet list skin distance
+viscosity	   FourParameterExp 1.856e-10 4209 0.04527 -3.376e-5
 
 run                ${nrun}

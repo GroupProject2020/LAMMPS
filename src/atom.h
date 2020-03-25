@@ -15,6 +15,7 @@
 #define LMP_ATOM_H
 
 #include "pointers.h"
+#include "Viscosity.h"
 #include <map>
 #include <string>
 
@@ -87,7 +88,7 @@ class Atom : protected Pointers {
 
   double *rho,*drho,*e,*de,*cv;
   double **vest;
-  double *viscosity;
+  Viscosity *viscosity;
 
   // USER-SMD package
 
@@ -311,6 +312,7 @@ class Atom : protected Pointers {
   int map_style_set();
   void map_delete();
   int map_find_hash(tagint);
+  void add_viscosity(int narg, char **arg);
 
  protected:
 

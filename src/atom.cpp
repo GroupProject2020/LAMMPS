@@ -35,6 +35,8 @@
 #include "memory.h"
 #include "error.h"
 #include "utils.h"
+#include <string.h>
+#include "viscosity_four_parameter_exp.h"
 
 #ifdef LMP_USER_INTEL
 #include "neigh_request.h"
@@ -2348,4 +2350,21 @@ int Atom::memcheck(const char *str)
   strcat(memstr,padded);
   delete [] padded;
   return 1;
+}
+
+void Atom::add_viscosity(int narg, char **arg) {
+    if (narg<1) error->all(FLERR,"Too few arguments for creation of viscosity");
+    if (!strcmp(arg[0], "FourParameterExp")){
+        if (narg != 5) error->all(FLERR,"Wrong number of arguments for creation of four parameter exponential viscosity");
+        double A,B,C,D;
+        sscanf(arg[1],"%lg",&A);
+        sscanf(arg[2],"%lg",&B);
+        sscanf(arg[3],"%lg",&C);
+        sscanf(arg[4],"%lg",&D);
+        this->viscosity = new ViscosityFourParameterExp(A, B, C, D);
+        printf("Viscosity created\n");
+    }
+    else {
+        printf("Nothing implemented for %s", arg[0]);
+    }
 }

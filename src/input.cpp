@@ -850,6 +850,7 @@ int Input::execute_command()
   else if (!strcmp(command,"undump")) undump();
   else if (!strcmp(command,"unfix")) unfix();
   else if (!strcmp(command,"units")) units();
+  else if (!strcmp(command, "viscosity")) add_viscosity();
 
   else flag = 0;
 
@@ -2011,4 +2012,9 @@ void Input::units()
   if (domain->box_exist)
     error->all(FLERR,"Units command after simulation box is defined");
   update->set_units(arg[0]);
+}
+
+void Input::add_viscosity()
+{
+    atom->add_viscosity(narg, arg);
 }
