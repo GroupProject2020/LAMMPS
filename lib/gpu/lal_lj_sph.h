@@ -52,7 +52,7 @@ namespace LAMMPS_AL {
         UCL_D_Vec<numtyp4> cuts;
 
         /// If atom type constants fit in shared memory, use fast kernels
-        bool shared_types; //TODO: is this needed or not?
+        bool shared_types;
 
         /// Number of atom types
         int _lj_types;
