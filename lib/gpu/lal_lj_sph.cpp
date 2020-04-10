@@ -1,9 +1,9 @@
 #if defined(USE_OPENCL)
-#include "lj_cl.h"
+#include "sph_lj_cl.h"
 #elif defined(USE_CUDART)
 const char *lj=0;
 #else
-#include "lj_cubin.h"
+#include "sph_lj_cubin.h"
 #endif
 
 #include "lal_lj_sph.h"

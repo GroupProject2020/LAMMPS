@@ -256,7 +256,7 @@ namespace LAMMPS_AL {
     template <class numtyp, class acctyp>
     double BaseAtomicSPHT::host_memory_usage_atomic() const {
         return device->atom.host_memory_usage()+nbor->host_memory_usage()+
-               4*sizeof(numtyp)+sizeof(BaseAtomic<numtyp,acctyp>);
+               4*sizeof(numtyp)+sizeof(BaseAtomicSPH<numtyp,acctyp>);
     }
 
     template <class numtyp, class acctyp>
@@ -282,5 +282,5 @@ namespace LAMMPS_AL {
         _compiled=true;
     }
 
-    template class BaseAtomic<PRECISION,ACC_PRECISION>;
+    template class BaseAtomicSPH<PRECISION,ACC_PRECISION>;
 }

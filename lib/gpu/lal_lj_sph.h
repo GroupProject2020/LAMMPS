@@ -3,7 +3,7 @@
 #define LAL_LJ_SPH_H
 
 
-#include "lal_base_atomic.h"
+#include "lal_base_atomic_sph.h"
 
 namespace LAMMPS_AL {
 

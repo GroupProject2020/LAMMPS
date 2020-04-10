@@ -111,7 +111,7 @@ __kernel void k_lj_sph(const __global numtyp4 *restrict x_,
             wfd = -19.098593171027440292e0 * wfd * wfd * ihsq * ihsq * ihsq;
         }
 
-        double cvj; fetch(cvj j, cv_tex);
+        double cvj; fetch(cvj, j, cv_tex);
         double ej; fetch(ej, j, cv_tex);
         double rhoj; fetch(rhoj, j, cv_tex);
 
@@ -262,7 +262,7 @@ __kernel void k_lj_sph_fast(const __global numtyp4 *restrict x_,
             wfd = -19.098593171027440292e0 * wfd * wfd * ihsq * ihsq * ihsq;
         }
 
-        double cvj; fetch(cvj j, cv_tex);
+        double cvj; fetch(cvj, j, cv_tex);
         double ej; fetch(ej, j, cv_tex);
         double rhoj; fetch(rhoj, j, cv_tex);
 

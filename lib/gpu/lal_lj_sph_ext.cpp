@@ -8,14 +8,14 @@
 using namespace std;
 using namespace LAMMPS_AL;
 
-static LJ<PRECISION,ACC_PRECISION> LJSPHMF; //TODO: adapted template
+static LJ_SPH<PRECISION,ACC_PRECISION> LJSPHMF; //TODO: adapted template
 
 
 // ---------------------------------------------------------------------------
 // Allocate memory on host and device and copy constants to device
 // ---------------------------------------------------------------------------
 int lj_sph_gpu_init(const int ntypes, double **cutsq, double **host_cutsq,
-                    double **host_cut, double **host_mass, const int nlocal,
+                    double **host_cut, double **host_mass, const int inum,
                     const int nall, const int max_nbors, const int maxspecial,
                     const double cell_size, int &gpu_mode, FILE *screen) {
     LJSPHMF.clear();
@@ -27,10 +27,10 @@ int lj_sph_gpu_init(const int ntypes, double **cutsq, double **host_cutsq,
     int gpu_rank=LJSPHMF.device->gpu_rank();
     int procs_per_gpu=LJSPHMF.device->procs_per_gpu();
 
-    LJSPHLMF.device->init_message(screen,"lj/sph",first_gpu,last_gpu);
+    LJSPHMF.device->init_message(screen,"lj/sph",first_gpu,last_gpu);
 
     bool message=false;
-    if (LJSPHLMF.device->replica_me()==0 && screen)
+    if (LJSPHMF.device->replica_me()==0 && screen)
         message=true;
 
     if (message) {
@@ -40,10 +40,10 @@ int lj_sph_gpu_init(const int ntypes, double **cutsq, double **host_cutsq,
 
     int init_ok=0;
     if (world_me==0)
-        init_ok=LJSPHLMF.init(ntypes, cutsq, host_cut, host_mass, inum, nall, 300,
+        init_ok=LJSPHMF.init(ntypes, cutsq, host_cut, host_mass, inum, nall, 300,
                            maxspecial, cell_size, gpu_split, screen);
 
-    LJSPHLMF.device->world_barrier();
+    LJSPHMF.device->world_barrier();
     if (message)
         fprintf(screen,"Done.\n");
 
@@ -57,10 +57,10 @@ int lj_sph_gpu_init(const int ntypes, double **cutsq, double **host_cutsq,
             fflush(screen);
         }
         if (gpu_rank==i && world_me!=0)
-            init_ok=LJSPHLMF.init(ntypes, cutsq, host_cut, host_mass, inum, nall, 300,
+            init_ok=LJSPHMF.init(ntypes, cutsq, host_cut, host_mass, inum, nall, 300,
                                   maxspecial, cell_size, gpu_split, screen);
 
-        LJSPHLMF.device->gpu_barrier();
+        LJSPHMF.device->gpu_barrier();
         if (message)
             fprintf(screen,"Done.\n");
     }
@@ -68,7 +68,7 @@ int lj_sph_gpu_init(const int ntypes, double **cutsq, double **host_cutsq,
         fprintf(screen,"\n");
 
     if (init_ok==0)
-        LJSPHLMF.estimate_gpu_overhead();
+        LJSPHMF.estimate_gpu_overhead();
     return init_ok;
 }
 
@@ -82,7 +82,7 @@ void ljl_gpu_reinit(const int ntypes, double **host_cutsq,
     int procs_per_gpu=LJSPHMF.device->procs_per_gpu();
 
     if (world_me==0)
-        LJSPHMF.reinit(ntypes, cutsq, host_cut, host_mass);
+        LJSPHMF.reinit(ntypes, host_cutsq, host_cut, host_mass);
     LJSPHMF.device->world_barrier();
 
     for (int i=0; i<procs_per_gpu; i++) {

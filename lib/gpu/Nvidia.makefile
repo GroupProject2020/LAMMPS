@@ -214,6 +214,9 @@ $(OBJ_DIR)/lal_device.o: lal_device.cpp lal_device.h $(ALL_H) $(OBJ_DIR)/device_
 $(OBJ_DIR)/lal_base_atomic.o: $(ALL_H) lal_base_atomic.h lal_base_atomic.cpp
 	$(CUDR) -o $@ -c lal_base_atomic.cpp
 
+$(OBJ_DIR)/lal_base_atomic_sph.o: $(ALL_H) lal_base_atomic_sph.h lal_base_atomic_sph.cpp
+	$(CUDR) -o $@ -c lal_base_atomic_sph.cpp
+
 $(OBJ_DIR)/lal_base_charge.o: $(ALL_H) lal_base_charge.h lal_base_charge.cpp
 	$(CUDR) -o $@ -c lal_base_charge.cpp
 
@@ -228,9 +231,6 @@ $(OBJ_DIR)/lal_base_three.o: $(ALL_H) lal_base_three.h lal_base_three.cpp
 
 $(OBJ_DIR)/lal_base_dpd.o: $(ALL_H) lal_base_dpd.h lal_base_dpd.cpp
 	$(CUDR) -o $@ -c lal_base_dpd.cpp
-
-$(OBJ_DIR)/lal_base_atomic_sph.o: $(ALL_H) lal_base_atomic_sph.h lal_base_atomic_sph.cpp
-    $(CUDR) -o $@ -c lal_base_atomic_sph.cpp
 
 $(OBJ_DIR)/pppm_f.cubin: lal_pppm.cu lal_precision.h lal_preprocessor.h
 	$(CUDA) --cubin -DNV_KERNEL -Dgrdtyp=float -Dgrdtyp4=float4 -o $@ lal_pppm.cu
