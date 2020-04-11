@@ -3,12 +3,12 @@
 #define LAL_LJ_SPH_H
 
 
-#include "lal_base_atomic_sph.h"
+#include "lal_base_atomic.h"
 
 namespace LAMMPS_AL {
 
     template <class numtyp, class acctyp>
-    class LJ_SPH : public BaseAtomicSPH<numtyp, acctyp> {
+    class LJ_SPH : public BaseAtomic<numtyp, acctyp> {
     public:
         LJ_SPH();
         ~LJ_SPH();
@@ -45,11 +45,13 @@ namespace LAMMPS_AL {
         double host_memory_usage() const;
         // --------------------------- TEXTURES -----------------------------
 
-
+        UCL_Texture cv_tex, e_tex, rho_tex, de_tex, drho_tex;
         // --------------------------- TYPE DATA --------------------------
 
         /// cuts.x = cutsq, cuts.y = cut, cuts.z = mass
         UCL_D_Vec<numtyp4> cuts;
+
+        UCL_Vector<numtyp> cv, e, rho, de, drho;
 
         /// If atom type constants fit in shared memory, use fast kernels
         bool shared_types;

@@ -61,6 +61,25 @@ int LJ_SPHT::init(const int ntypes, double **host_cutsq,
     this->atom->type_pack4(ntypes,lj_types,cuts,host_write,host_cutsq,host_cut,
                            host_mass);
 
+    cv.alloc(nlocal, *(this->ucl_device),UCL_READ_ONLY);
+    cv_tex.get_texture(*(this->pair_program), "cv_tex");
+    cv_tex.bind_float(cv,1);
+
+    rho.alloc(nlocal, *(this->ucl_device),UCL_READ_ONLY);
+    rho_tex.get_texture(*(this->pair_program), "rho_tex");
+    rho_tex.bind_float(rho,1);
+
+    e.alloc(nlocal, *(this->ucl_device),UCL_READ_ONLY);
+    e_tex.get_texture(*(this->pair_program), "e_tex");
+    e_tex.bind_float(e,1);
+
+    de.alloc(nlocal, *(this->ucl_device),UCL_READ_ONLY);
+    de_tex.get_texture(*(this->pair_program), "de_tex");
+    de_tex.bind_float(de,1);
+
+    drho.alloc(nlocal, *(this->ucl_device),UCL_READ_ONLY);
+    drho_tex.get_texture(*(this->pair_program), "drho_tex");
+    drho_tex.bind_float(drho,1);
 
     _allocated=true;
     this->_max_bytes=cuts.row_bytes();
@@ -88,6 +107,12 @@ void LJ_SPHT::clear() {
     _allocated=false;
 
     cuts.clear();
+    cv.clear();
+    e.clear();
+    rho.clear();
+    de.clear();
+    drho.clear();
+
     this->clear_atomic();
 }
 
@@ -122,17 +147,17 @@ void LJ_SPHT::loop(const bool _eflag, const bool _vflag) {
     this->time_pair.start();
     if (shared_types) {
         this->k_pair_fast.set_size(GX,BX);
-        this->k_pair_fast.run(&this->atom->x, &this->atom->v, &this->atom->cv,
-                              &this->atom->e, &this->atom->rho, &this->atom->de,
-                              &this->atom->drho, &this->atom->cuts,
+        this->k_pair_fast.run(&this->atom->x, &this->atom->v, &cv,
+                              &e, &rho, &de,
+                              &drho, &this->atom->cuts,
                               &this->nbor->dev_nbor, &this->_nbor_data->begin(),
                               &this->ans->force, &this->ans->engv, &eflag, &vflag,
                               &ainum, &nbor_pitch, &this->_threads_per_atom);
     } else {
         this->k_pair.set_size(GX,BX);
-        this->k_pair.run(&this->atom->x, &this->atom->v, &this->atom->cv,
-                         &this->atom->e, &this->atom->rho, &this->atom->de,
-                         &this->atom->drho, &this->atom->cuts, &_lj_types,
+        this->k_pair.run(&this->atom->x, &this->atom->v, &cv,
+                         &e, &rho, &de,
+                         &tdrho, &this->atom->cuts, &_lj_types,
                          &this->nbor->dev_nbor, &this->_nbor_data->begin(),
                          &this->ans->force, &this->ans->engv, &eflag, &vflag,
                          &ainum, &nbor_pitch, &this->_threads_per_atom);

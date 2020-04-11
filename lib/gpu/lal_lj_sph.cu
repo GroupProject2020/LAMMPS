@@ -297,14 +297,14 @@ __kernel void k_lj_sph_fast(const __global numtyp4 *restrict x_,
         f.y+=dely*force;
         f.z+=delz*force;
 
-        double dei; fetch(dei, i, dcv_tex);
-        double drhoi; fetch(drhoi, i, dcv_tex);
+        double dei; //fetch(dei, i, dcv_tex);
+        double drhoi; //fetch(drhoi, i, dcv_tex);
 
         // and change in density
-        drhoi += jmass * delVdotDelR * wfd;
+        drho_[i] += jmass * delVdotDelR * wfd;
 
         // change in thermal energy
-        dei += deltaE;
+        de_[i] += deltaE;
 
         if (vflag>0) {
           virial[0] += delx*delx*force;
