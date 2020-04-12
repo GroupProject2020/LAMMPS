@@ -43,6 +43,26 @@ namespace LAMMPS_AL {
 
         /// Total host memory used by library for pair style
         double host_memory_usage() const;
+
+        /// Pair loop with host neighboring
+        void compute(const int ago, const int inum_full, const int nall,
+                             double **host_x, double **host_v, double **host_cv,
+                             double **host_e, double **host_rho, double **host_de,
+                             double **host_drho, int *host_type, int *ilist, int *numj,
+                             int **firstneigh, const bool eflag, const bool vflag,
+                             const bool eatom, const bool vatom, int &host_start,
+                             const double cpu_time, bool &success, int domainDim, tagint* tag);
+
+        /// Pair loop with device neighboring
+        int ** compute(const int ago, const int inum_full,
+                       const int nall, double **host_x, double **host_v,
+                       double **host_cv, double **host_e, double **host_rho,
+                       double **host_de, double **host_drho, int *host_type,
+                       double *sublo, double *subhi, tagint *tag, int **nspecial,
+                       tagint **special, const bool eflag, const bool vflag,
+                       const bool eatom, const bool vatom, int &host_start,
+                       int **ilist, int **jnum, const double cpu_time,
+                       bool &success, int domainDim, tagint* tag);
         // --------------------------- TEXTURES -----------------------------
 
         UCL_Texture cv_tex, e_tex, rho_tex, de_tex, drho_tex;
@@ -61,7 +81,7 @@ namespace LAMMPS_AL {
 
     private:
         bool _allocated;
-        void loop(const bool _eflag, const bool _vflag);
+        void loop(const bool _eflag, const bool _vflag, int domainDim, tagint* tag);
     };
 
 }

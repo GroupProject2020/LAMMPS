@@ -121,11 +121,118 @@ double LJ_SPHT::host_memory_usage() const {
     return this->host_memory_usage_atomic()+sizeof(LJ_SPH<numtyp,acctyp>);
 }
 
+void LJ_SPHT::compute(const int ago, const int inum_full, const int nall,
+                      double **host_x, double **host_v, double **host_cv,
+                      double **host_e, double **host_rho, double **host_de,
+                      double **host_drho, int *host_type, int *ilist, int *numj,
+                      int **firstneigh, const bool eflag, const bool vflag,
+                      const bool eatom, const bool vatom, int &host_start,
+                      const double cpu_time, bool &success, int domainDim, tagint* tag){
+    acc_timers();
+    if (inum_full==0) {
+        host_start=0;
+        // Make sure textures are correct if realloc by a different hybrid style
+        resize_atom(0,nall,success);
+        zero_timers();
+        return;
+    }
+
+    int ago=hd_balancer.ago_first(f_ago);
+    int inum=hd_balancer.balance(ago,inum_full,cpu_time);
+    ans->inum(inum);
+    host_start=inum;
+
+    if (ago==0) {
+        reset_nbors(nall, inum, ilist, numj, firstneigh, success);
+        if (!success)
+            return;
+    }
+
+    atom->cast_x_data(host_x,host_type);
+    atom->cast_v_data(host_v, tag);
+    this->cast_cv_data(host_cv);
+    this->cast_e_data(host_e);
+    this->cast_rho_data(host_rho);
+    this->cast_de_data(host_de);
+    this->cast_drho_data(host_drho);
+
+    hd_balancer.start_timer();
+    atom->add_x_data(host_x,host_type);
+    atom->add_v_data(host_v,tag);
+    this->add_cv_data();
+    this->add_e_data();
+    this->add_rho_data();
+    this->add_de_data();
+    this->add_drho_data();
+
+    loop(eflag,vflag, domainDim);
+    ans->copy_answers(eflag,vflag,eatom,vatom,ilist);
+    device->add_ans_object(ans);
+    hd_balancer.stop_timer();
+}
+
+int ** compute(const int ago, const int inum_full,
+                   const int nall, double **host_x, double **host_v,
+                   double **host_cv, double **host_e, double **host_rho,
+                   double **host_de, double **host_drho, int *host_type,
+                   double *sublo, double *subhi, tagint *tag, int **nspecial,
+                   tagint **special, const bool eflag, const bool vflag,
+                   const bool eatom, const bool vatom, int &host_start,
+                   int **ilist, int **jnum, const double cpu_time,
+                   bool &success, int domainDim, tagint* tag){
+    acc_timers();
+    if (inum_full==0) {
+        host_start=0;
+        // Make sure textures are correct if realloc by a different hybrid style
+        resize_atom(0,nall,success);
+        zero_timers();
+        return NULL;
+    }
+
+    hd_balancer.balance(cpu_time);
+    int inum=hd_balancer.get_gpu_count(ago,inum_full);
+    ans->inum(inum);
+    host_start=inum;
+
+    // Build neighbor list on GPU if necessary
+    if (ago==0) {
+        build_nbor_list(inum, inum_full-inum, nall, host_x, host_type,
+                        sublo, subhi, tag, nspecial, special, success);
+        if (!success)
+            return NULL;
+        atom->cast_v_data(host_v,tag);
+        this->cast_cv_data(host_cv);
+        this->cast_e_data(host_e);
+        this->cast_rho_data(host_rho);
+        this->cast_de_data(host_de);
+        this->cast_drho_data(host_drho);
+        hd_balancer.start_timer();
+    } else {
+        atom->cast_x_data(host_x,host_type);
+        atom->cast_v_data(host_v,tag);
+        hd_balancer.start_timer();
+        atom->add_x_data(host_x,host_type);
+    }
+    this->add_cv_data();
+    this->add_e_data();
+    this->add_rho_data();
+    this->add_de_data();
+    this->add_drho_data();
+    *ilist=nbor->host_ilist.begin();
+    *jnum=nbor->host_acc.begin();
+
+    loop(eflag,vflag, domainDim, tag);
+    ans->copy_answers(eflag,vflag,eatom,vatom);
+    device->add_ans_object(ans);
+    hd_balancer.stop_timer();
+
+    return nbor->host_jlist.begin()-host_start;
+}
 // ---------------------------------------------------------------------------
 // Calculate energies, forces, and torques
 // ---------------------------------------------------------------------------
 template <class numtyp, class acctyp>
-void LJ_SPHT::loop(const bool _eflag, const bool _vflag) {
+void LJ_SPHT::loop(const bool _eflag, const bool _vflag, int DomainDim, tagint* tag) {
     // Compute the block size and grid size to keep all cores busy
     const int BX=this->block_size();
     int eflag, vflag;
@@ -152,7 +259,7 @@ void LJ_SPHT::loop(const bool _eflag, const bool _vflag) {
                               &drho, &this->atom->cuts,
                               &this->nbor->dev_nbor, &this->_nbor_data->begin(),
                               &this->ans->force, &this->ans->engv, &eflag, &vflag,
-                              &ainum, &nbor_pitch, &this->_threads_per_atom);
+                              &ainum, &nbor_pitch, &this->_threads_per_atom, DomainDim, tag);
     } else {
         this->k_pair.set_size(GX,BX);
         this->k_pair.run(&this->atom->x, &this->atom->v, &cv,
@@ -160,7 +267,7 @@ void LJ_SPHT::loop(const bool _eflag, const bool _vflag) {
                          &tdrho, &this->atom->cuts, &_lj_types,
                          &this->nbor->dev_nbor, &this->_nbor_data->begin(),
                          &this->ans->force, &this->ans->engv, &eflag, &vflag,
-                         &ainum, &nbor_pitch, &this->_threads_per_atom);
+                         &ainum, &nbor_pitch, &this->_threads_per_atom, DomainDim, tag);
     }
     this->time_pair.stop();
 }

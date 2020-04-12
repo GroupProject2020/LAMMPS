@@ -104,12 +104,12 @@ int ** ljl_gpu_compute_n(const int ago, const int inum_full,
                          tagint **special, const bool eflag, const bool vflag,
                          const bool eatom, const bool vatom, int &host_start,
                          int **ilist, int **jnum, const double cpu_time,
-                         bool &success, int domainDim) {
+                         bool &success, int domainDim, tagint* tag) {
     return LJSPHMF.compute(ago, inum_full, nall, host_x, host_v,
                            host_cv, host_e, host_rho,
                            host_de, host_drho, host_type, sublo,
                            subhi, tag, nspecial, special, eflag, vflag, eatom,
-                           vatom, host_start, ilist, jnum, cpu_time, success, domainDim);
+                           vatom, host_start, ilist, jnum, cpu_time, success, domainDim, tag);
 }
 
 void ljl_gpu_compute(const int ago, const int inum_full, const int nall,
@@ -118,10 +118,10 @@ void ljl_gpu_compute(const int ago, const int inum_full, const int nall,
                      double **host_drho, int *host_type, int *ilist, int *numj,
                      int **firstneigh, const bool eflag, const bool vflag,
                      const bool eatom, const bool vatom, int &host_start,
-                     const double cpu_time, bool &success, int domainDim) {
+                     const double cpu_time, bool &success, int domainDim, tagint* tag) {
     LJSPHMF.compute(ago, inum_full, nall, host_x, host_v, host_cv, host_e,
                     host_rho, host_de, host_drho, host_type,ilist,numj,
-                    firstneigh,eflag,vflag,eatom,vatom,host_start,cpu_time,success, domainDim);
+                    firstneigh,eflag,vflag,eatom,vatom,host_start,cpu_time,success, domainDim, tag);
 }
 
 double ljl_gpu_bytes() {

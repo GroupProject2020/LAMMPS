@@ -42,7 +42,7 @@ __kernel void k_lj_sph(const __global numtyp4 *restrict x_,
                        __global acctyp *restrict engv,
                        const int eflag, const int vflag, const int inum,
                        const int nbor_pitch,
-                       const int t_per_atom){ //TODO: arguments?
+                       const int t_per_atom, int DomainDim){ //TODO: arguments?
   int tid, ii, offset;
   atom_info(t_per_atom,ii,tid,offset);
   double h, ih, ihsq, ihcub, wfd, fi, ci, fj, cj;
@@ -185,7 +185,7 @@ __kernel void k_lj_sph_fast(const __global numtyp4 *restrict x_,
                        __global acctyp *restrict engv,
                        const int eflag, const int vflag, const int inum,
                        const int nbor_pitch,
-                       const int t_per_atom){ //TODO: arguments?
+                       const int t_per_atom), int DomainDim{ //TODO: arguments?
   int tid, ii, offset;
   atom_info(t_per_atom,ii,tid,offset);
   double h, ih, ihsq, ihcub, wfd, fi, ci, fj, cj;

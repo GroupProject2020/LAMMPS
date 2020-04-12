@@ -43,14 +43,14 @@ int ** ljl_gpu_compute_n(const int ago, const int inum_full,
                          tagint **special, const bool eflag, const bool vflag,
                          const bool eatom, const bool vatom, int &host_start,
                          int **ilist, int **jnum, const double cpu_time,
-                         bool &success, int domainDim);
+                         bool &success, int domainDim, tagint *tag);
 void ljl_gpu_compute(const int ago, const int inum_full, const int nall,
                      double **host_x, double **host_v, double **host_cv,
                      double **host_e, double **host_rho, double **host_de,
                      double **host_drho, int *host_type, int *ilist, int *numj,
                      int **firstneigh, const bool eflag, const bool vflag,
                      const bool eatom, const bool vatom, int &host_start,
-                     const double cpu_time, bool &success, int domainDim);
+                     const double cpu_time, bool &success, int domainDim, tagint *tag);
 double lj_sph_gpu_bytes();
 
 
@@ -93,7 +93,7 @@ void PairSPHLJGPU::compute(int eflag, int vflag)
                                        domain->subhi, atom->tag, atom->nspecial,
                                        atom->special, eflag, vflag, eflag_atom,
                                        vflag_atom, host_start,
-                                       &ilist, &numneigh, cpu_time, success, domain->dimension);
+                                       &ilist, &numneigh, cpu_time, success, domain->dimension, atom->tag);
     } else {
         inum = list->inum;
         ilist = list->ilist;
@@ -103,7 +103,7 @@ void PairSPHLJGPU::compute(int eflag, int vflag)
                            atom->cv, atom->e, atom->rho,
                            atom->de, atom->drho, atom->type,
                            ilist, numneigh, firstneigh, eflag, vflag, eflag_atom,
-                           vflag_atom, host_start, cpu_time, success, domain->dimension);
+                           vflag_atom, host_start, cpu_time, success, domain->dimension, atom->tag);
     }
     if (!success)
         error->one(FLERR,"Insufficient memory on accelerator");
