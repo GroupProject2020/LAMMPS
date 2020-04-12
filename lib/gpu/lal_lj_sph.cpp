@@ -131,7 +131,7 @@ void LJ_SPHT::compute(const int f_ago, const int inum_full, const int nall,
                       const double cpu_time, bool &success, tagint* tag){
     this->acc_timers();
     if (inum_full==0) {
-        this->host_start=0;
+        host_start=0;
         // Make sure textures are correct if realloc by a different hybrid style
         this->resize_atom(0,nall,success);
         this->zero_timers();
@@ -141,7 +141,7 @@ void LJ_SPHT::compute(const int f_ago, const int inum_full, const int nall,
     int ago=this->hd_balancer.ago_first(f_ago);
     int inum=this->hd_balancer.balance(ago,inum_full,cpu_time);
     this->ans->inum(inum);
-    this->host_start=inum;
+    host_start=inum;
 
     if (ago==0) {
         this->reset_nbors(nall, inum, ilist, numj, firstneigh, success);
@@ -166,7 +166,7 @@ void LJ_SPHT::compute(const int f_ago, const int inum_full, const int nall,
     this->add_de_data();
     this->add_drho_data();
 
-    this->loop(eflag,vflag, domainDim);
+    this->loop(eflag,vflag);
     this->ans->copy_answers(eflag,vflag,eatom,vatom,ilist);
     this->device->add_ans_object(this->ans);
     this->hd_balancer.stop_timer();
@@ -186,19 +186,19 @@ int ** LJ_SPHT::compute(const int ago, const int inum_full,
     if (inum_full==0) {
         host_start=0;
         // Make sure textures are correct if realloc by a different hybrid style
-        resize_atom(0,nall,success);
-        zero_timers();
+        this->resize_atom(0,nall,success);
+        this->zero_timers();
         return NULL;
     }
 
-    hd_balancer.balance(cpu_time);
+    this->hd_balancer.balance(cpu_time);
     int inum=hd_balancer.get_gpu_count(ago,inum_full);
-    ans->inum(inum);
-    host_start=inum;
+    this->ans->inum(inum);
+    this->host_start=inum;
 
     // Build neighbor list on GPU if necessary
     if (ago==0) {
-        build_nbor_list(inum, inum_full-inum, nall, host_x, host_type,
+        this->build_nbor_list(inum, inum_full-inum, nall, host_x, host_type,
                         sublo, subhi, tag, nspecial, special, success);
         if (!success)
             return NULL;
@@ -220,8 +220,8 @@ int ** LJ_SPHT::compute(const int ago, const int inum_full,
     this->add_rho_data();
     this->add_de_data();
     this->add_drho_data();
-    *ilist=nbor->host_ilist.begin();
-    *jnum=nbor->host_acc.begin();
+    *ilist=this->nbor->host_ilist.begin();
+    *jnum=this->nbor->host_acc.begin();
 
     this->loop(eflag,vflag);
     this->ans->copy_answers(eflag,vflag,eatom,vatom);
