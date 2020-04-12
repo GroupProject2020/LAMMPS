@@ -71,7 +71,7 @@ namespace LAMMPS_AL {
         /// cuts.x = cutsq, cuts.y = cut, cuts.z = mass
         UCL_D_Vec<numtyp4> cuts;
 
-        UCL_Vector<numtyp> cv, e, rho, de, drho;
+        UCL_Vector<numtyp,numtyp> cv, e, rho, de, drho;
 
         /// If atom type constants fit in shared memory, use fast kernels
         bool shared_types;

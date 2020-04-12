@@ -14,7 +14,7 @@ static LJ_SPH<PRECISION,ACC_PRECISION> LJSPHMF; //TODO: adapted template
 // ---------------------------------------------------------------------------
 // Allocate memory on host and device and copy constants to device
 // ---------------------------------------------------------------------------
-int lj_sph_gpu_init(const int ntypes, double **cutsq, double **host_cutsq,
+int lj_sph_gpu_init(const int ntypes, double **host_cutsq,
                     double **host_cut, double **host_mass, const int inum,
                     const int nall, const int max_nbors, const int maxspecial,
                     const double cell_size, int &gpu_mode, FILE *screen) {
@@ -40,7 +40,7 @@ int lj_sph_gpu_init(const int ntypes, double **cutsq, double **host_cutsq,
 
     int init_ok=0;
     if (world_me==0)
-        init_ok=LJSPHMF.init(ntypes, cutsq, host_cut, host_mass, inum, nall, 300,
+        init_ok=LJSPHMF.init(ntypes, host_cutsq, host_cut, host_mass, inum, nall, 300,
                            maxspecial, cell_size, gpu_split, screen);
 
     LJSPHMF.device->world_barrier();
@@ -57,7 +57,7 @@ int lj_sph_gpu_init(const int ntypes, double **cutsq, double **host_cutsq,
             fflush(screen);
         }
         if (gpu_rank==i && world_me!=0)
-            init_ok=LJSPHMF.init(ntypes, cutsq, host_cut, host_mass, inum, nall, 300,
+            init_ok=LJSPHMF.init(ntypes, host_cutsq, host_cut, host_mass, inum, nall, 300,
                                   maxspecial, cell_size, gpu_split, screen);
 
         LJSPHMF.device->gpu_barrier();
@@ -87,7 +87,7 @@ void ljl_gpu_reinit(const int ntypes, double **host_cutsq,
 
     for (int i=0; i<procs_per_gpu; i++) {
         if (gpu_rank==i && world_me!=0)
-            LJSPHMF.reinit(ntypes, cutsq, host_cut, host_mass);
+            LJSPHMF.reinit(ntypes, host_cutsq, host_cut, host_mass);
         LJSPHMF.device->gpu_barrier();
     }
 }

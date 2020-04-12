@@ -29,7 +29,7 @@ OBJS = $(OBJ_DIR)/lal_atom.o $(OBJ_DIR)/lal_ans.o \
        $(OBJ_DIR)/lal_device.o $(OBJ_DIR)/lal_base_atomic.o \
        $(OBJ_DIR)/lal_base_charge.o $(OBJ_DIR)/lal_base_ellipsoid.o \
        $(OBJ_DIR)/lal_base_dipole.o $(OBJ_DIR)/lal_base_three.o \
-       $(OBJ_DIR)/lal_base_dpd.o $(OBJ_DIR)/lal_base_atomic_sph.o\
+       $(OBJ_DIR)/lal_base_dpd.o \
        $(OBJ_DIR)/lal_pppm.o $(OBJ_DIR)/lal_pppm_ext.o \
        $(OBJ_DIR)/lal_gayberne.o $(OBJ_DIR)/lal_gayberne_ext.o \
        $(OBJ_DIR)/lal_re_squared.o $(OBJ_DIR)/lal_re_squared_ext.o \
@@ -214,9 +214,6 @@ $(OBJ_DIR)/lal_device.o: lal_device.cpp lal_device.h $(ALL_H) $(OBJ_DIR)/device_
 $(OBJ_DIR)/lal_base_atomic.o: $(ALL_H) lal_base_atomic.h lal_base_atomic.cpp
 	$(CUDR) -o $@ -c lal_base_atomic.cpp
 
-$(OBJ_DIR)/lal_base_atomic_sph.o: $(ALL_H) lal_base_atomic_sph.h lal_base_atomic_sph.cpp
-	$(CUDR) -o $@ -c lal_base_atomic_sph.cpp
-
 $(OBJ_DIR)/lal_base_charge.o: $(ALL_H) lal_base_charge.h lal_base_charge.cpp
 	$(CUDR) -o $@ -c lal_base_charge.cpp
 
@@ -310,10 +307,10 @@ $(OBJ_DIR)/lal_lj.o: $(ALL_H) lal_lj.h lal_lj.cpp $(OBJ_DIR)/lj_cubin.h $(OBJ_DI
 $(OBJ_DIR)/lal_lj_ext.o: $(ALL_H) lal_lj.h lal_lj_ext.cpp lal_base_atomic.h
 	$(CUDR) -o $@ -c lal_lj_ext.cpp -I$(OBJ_DIR)
 
-$(OBJ_DIR)/lal_lj_sph.o: $(ALL_H) lal_lj_sph.h lal_lj_sph.cpp $(OBJ_DIR)/sph_lj_cubin.h $(OBJ_DIR)/lal_base_atomic_sph.o
+$(OBJ_DIR)/lal_lj_sph.o: $(ALL_H) lal_lj_sph.h lal_lj_sph.cpp $(OBJ_DIR)/sph_lj_cubin.h $(OBJ_DIR)/lal_base_atomic.o
 	$(CUDR) -o $@ -c lal_lj_sph.cpp -I$(OBJ_DIR)
 
-$(OBJ_DIR)/lal_lj_sph_ext.o: $(ALL_H) lal_lj_sph.h lal_lj_sph_ext.cpp lal_base_atomic_sph.h
+$(OBJ_DIR)/lal_lj_sph_ext.o: $(ALL_H) lal_lj_sph.h lal_lj_sph_ext.cpp lal_base_atomic.h
 	$(CUDR) -o $@ -c lal_lj_sph_ext.cpp -I$(OBJ_DIR)
 
 $(OBJ_DIR)/lj_tip4p_long.cubin: lal_lj_tip4p_long.cu lal_precision.h lal_preprocessor.h
