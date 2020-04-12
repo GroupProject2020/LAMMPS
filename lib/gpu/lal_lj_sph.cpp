@@ -39,6 +39,9 @@ int LJ_SPHT::init(const int ntypes, double **host_cutsq,
                               screen,lj_sph,"k_lj_sph");
     if (success!=0)
         return success;
+    this->k_pair.set_function(*(this->pair_program),"k_lj_sph");
+    this->k_pair_fast.set_function(*(this->pair_program),"k_lj_sph_fast");
+
     this->domainDim = domainDim;
     // If atom type constants fit in shared memory use fast kernel
     int lj_types=ntypes;
@@ -123,9 +126,9 @@ double LJ_SPHT::host_memory_usage() const {
 
 template <class numtyp, class acctyp>
 void LJ_SPHT::compute(const int f_ago, const int inum_full, const int nall,
-                      double **host_x, double **host_v, double **host_cv,
-                      double **host_e, double **host_rho, double **host_de,
-                      double **host_drho, int *host_type, int *ilist, int *numj,
+                      double **host_x, double **host_v, double *host_cv,
+                      double *host_e, double *host_rho, double *host_de,
+                      double *host_drho, int *host_type, int *ilist, int *numj,
                       int **firstneigh, const bool eflag, const bool vflag,
                       const bool eatom, const bool vatom, int &host_start,
                       const double cpu_time, bool &success, tagint* tag){
@@ -175,8 +178,8 @@ void LJ_SPHT::compute(const int f_ago, const int inum_full, const int nall,
 template <class numtyp, class acctyp>
 int ** LJ_SPHT::compute(const int ago, const int inum_full,
                    const int nall, double **host_x, double **host_v,
-                   double **host_cv, double **host_e, double **host_rho,
-                   double **host_de, double **host_drho, int *host_type,
+                   double *host_cv, double *host_e, double *host_rho,
+                   double *host_de, double *host_drho, int *host_type,
                    double *sublo, double *subhi, tagint *tag, int **nspecial,
                    tagint **special, const bool eflag, const bool vflag,
                    const bool eatom, const bool vatom, int &host_start,
@@ -192,9 +195,9 @@ int ** LJ_SPHT::compute(const int ago, const int inum_full,
     }
 
     this->hd_balancer.balance(cpu_time);
-    int inum=hd_balancer.get_gpu_count(ago,inum_full);
+    int inum=this->hd_balancer.get_gpu_count(ago,inum_full);
     this->ans->inum(inum);
-    this->host_start=inum;
+    host_start=inum;
 
     // Build neighbor list on GPU if necessary
     if (ago==0) {
@@ -225,10 +228,10 @@ int ** LJ_SPHT::compute(const int ago, const int inum_full,
 
     this->loop(eflag,vflag);
     this->ans->copy_answers(eflag,vflag,eatom,vatom);
-    this->device->add_ans_object(ans);
+    this->device->add_ans_object(this->ans);
     this->hd_balancer.stop_timer();
 
-    return nbor->host_jlist.begin()-host_start;
+    return this->nbor->host_jlist.begin()-host_start;
 }
 // ---------------------------------------------------------------------------
 // Calculate energies, forces, and torques
@@ -261,7 +264,7 @@ void LJ_SPHT::loop(const bool _eflag, const bool _vflag) {
                               &drho, &this->cuts,
                               &this->nbor->dev_nbor, &this->_nbor_data->begin(),
                               &this->ans->force, &this->ans->engv, &eflag, &vflag,
-                              &ainum, &nbor_pitch, &this->_threads_per_atom, this->domainDim);
+                              &ainum, &nbor_pitch, &this->_threads_per_atom, &this->domainDim);
     } else {
         this->k_pair.set_size(GX,BX);
         this->k_pair.run(&this->atom->x, &this->atom->v, &cv,
@@ -269,7 +272,7 @@ void LJ_SPHT::loop(const bool _eflag, const bool _vflag) {
                          &drho, &this->cuts, &_lj_types,
                          &this->nbor->dev_nbor, &this->_nbor_data->begin(),
                          &this->ans->force, &this->ans->engv, &eflag, &vflag,
-                         &ainum, &nbor_pitch, &this->_threads_per_atom, this->domainDim);
+                         &ainum, &nbor_pitch, &this->_threads_per_atom, &this->domainDim);
     }
     this->time_pair.stop();
 }

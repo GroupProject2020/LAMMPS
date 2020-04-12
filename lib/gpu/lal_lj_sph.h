@@ -32,15 +32,10 @@ namespace LAMMPS_AL {
 
         inline void cast_cv_data(double* host_cv) {
             int nall = this->atom->nall();
-            if (_shared_view) {
-                cv.host.view((numtyp*)host_cv,nall,*(this->ucl_device));
-                cv.device.view(cv.host);
-            } else {
                 if (sizeof(numtyp)==sizeof(double))
                     memcpy(cv.host.begin(),host_cv,nall*sizeof(numtyp));
                 else
                     for (int i=0; i<nall; i++) cv[i]=host_cv[i];
-            }
         }
 
         // Copy rad to device asynchronously
@@ -50,15 +45,10 @@ namespace LAMMPS_AL {
 
         inline void cast_e_data(double* host_e) {
             int nall = this->atom->nall();
-            if (_shared_view) {
-                e.host.view((numtyp*)host_e,nall,*(this->ucl_device));
-                e.device.view(e.host);
-            } else {
                 if (sizeof(numtyp)==sizeof(double))
                     memcpy(e.host.begin(),host_e,nall*sizeof(numtyp));
                 else
                     for (int i=0; i<nall; i++) e[i]=host_e[i];
-            }
         }
 
         // Copy rad to device asynchronously
@@ -69,15 +59,10 @@ namespace LAMMPS_AL {
 
         inline void cast_rho_data(double* host_rho) {
             int nall = this->atom->nall();
-            if (_shared_view) {
-                rho.host.view((numtyp*)host_rho,nall,*(this->ucl_device));
-                rho.device.view(rho.host);
-            } else {
                 if (sizeof(numtyp)==sizeof(double))
                     memcpy(rho.host.begin(),host_rho,nall*sizeof(numtyp));
                 else
                     for (int i=0; i<nall; i++) rho[i]=host_rho[i];
-            }
         }
 
         // Copy rad to device asynchronously
@@ -87,15 +72,10 @@ namespace LAMMPS_AL {
 
         inline void cast_de_data(double* host_de) {
             int nall = this->atom->nall();
-            if (_shared_view) {
-                de.host.view((numtyp*)host_de,nall,*(this->ucl_device));
-                de.device.view(de.host);
-            } else {
                 if (sizeof(numtyp)==sizeof(double))
                     memcpy(de.host.begin(),host_de,nall*sizeof(numtyp));
                 else
                     for (int i=0; i<nall; i++) de[i]=host_de[i];
-            }
         }
 
         // Copy rad to device asynchronously
@@ -105,15 +85,10 @@ namespace LAMMPS_AL {
 
         inline void cast_drho_data(double* host_drho) {
             int nall = this->atom->nall();
-            if (_shared_view) {
-                drho.host.view((numtyp*)host_drho,nall,*(this->ucl_device));
-                drho.device.view(drho.host);
-            } else {
                 if (sizeof(numtyp)==sizeof(double))
                     memcpy(drho.host.begin(),host_drho,nall*sizeof(numtyp));
                 else
                     for (int i=0; i<nall; i++) drho[i]=host_drho[i];
-            }
         }
 
         // Copy rad to device asynchronously
@@ -137,9 +112,9 @@ namespace LAMMPS_AL {
 
         /// Pair loop with host neighboring
         void compute(const int ago, const int inum_full, const int nall,
-                             double **host_x, double **host_v, double **host_cv,
-                             double **host_e, double **host_rho, double **host_de,
-                             double **host_drho, int *host_type, int *ilist, int *numj,
+                             double **host_x, double **host_v, double *host_cv,
+                             double *host_e, double *host_rho, double *host_de,
+                             double *host_drho, int *host_type, int *ilist, int *numj,
                              int **firstneigh, const bool eflag, const bool vflag,
                              const bool eatom, const bool vatom, int &host_start,
                              const double cpu_time, bool &success, tagint* tag);
@@ -147,8 +122,8 @@ namespace LAMMPS_AL {
         /// Pair loop with device neighboring
         int ** compute(const int ago, const int inum_full,
                        const int nall, double **host_x, double **host_v,
-                       double **host_cv, double **host_e, double **host_rho,
-                       double **host_de, double **host_drho, int *host_type,
+                       double *host_cv, double *host_e, double *host_rho,
+                       double *host_de, double *host_drho, int *host_type,
                        double *sublo, double *subhi, tagint *tag, int **nspecial,
                        tagint **special, const bool eflag, const bool vflag,
                        const bool eatom, const bool vatom, int &host_start,

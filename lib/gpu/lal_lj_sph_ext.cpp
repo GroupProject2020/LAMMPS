@@ -98,8 +98,8 @@ void ljl_gpu_clear() {
 
 int ** ljl_gpu_compute_n(const int ago, const int inum_full,
                          const int nall, double **host_x, double **host_v,
-                         double **host_cv, double **host_e, double **host_rho,
-                         double **host_de, double **host_drho, int *host_type,
+                         double *host_cv, double *host_e, double *host_rho,
+                         double *host_de, double *host_drho, int *host_type,
                          double *sublo, double *subhi, tagint *tag, int **nspecial,
                          tagint **special, const bool eflag, const bool vflag,
                          const bool eatom, const bool vatom, int &host_start,
@@ -113,9 +113,9 @@ int ** ljl_gpu_compute_n(const int ago, const int inum_full,
 }
 
 void ljl_gpu_compute(const int ago, const int inum_full, const int nall,
-                     double **host_x, double **host_v, double **host_cv,
-                     double **host_e, double **host_rho, double **host_de,
-                     double **host_drho, int *host_type, int *ilist, int *numj,
+                     double **host_x, double **host_v, double *host_cv,
+                     double *host_e, double *host_rho, double *host_de,
+                     double *host_drho, int *host_type, int *ilist, int *numj,
                      int **firstneigh, const bool eflag, const bool vflag,
                      const bool eatom, const bool vatom, int &host_start,
                      const double cpu_time, bool &success, tagint* tag) {
