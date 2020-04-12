@@ -28,7 +28,7 @@ namespace LAMMPS_AL {
                  double **host_cut, double **host_mass,
                  const int nlocal, const int nall, const int max_nbors,
                  const int maxspecial, const double cell_size,
-                 const double gpu_split, FILE *screen);
+                 const double gpu_split, FILE *screen, int domainDim);
 
         /// Send updated coeffs from host to device (to be compatible with fix adapt)
         void reinit(const int ntypes, double **host_cutsq,
@@ -51,7 +51,7 @@ namespace LAMMPS_AL {
                              double **host_drho, int *host_type, int *ilist, int *numj,
                              int **firstneigh, const bool eflag, const bool vflag,
                              const bool eatom, const bool vatom, int &host_start,
-                             const double cpu_time, bool &success, int domainDim, tagint* tag);
+                             const double cpu_time, bool &success, tagint* tag);
 
         /// Pair loop with device neighboring
         int ** compute(const int ago, const int inum_full,
@@ -62,7 +62,7 @@ namespace LAMMPS_AL {
                        tagint **special, const bool eflag, const bool vflag,
                        const bool eatom, const bool vatom, int &host_start,
                        int **ilist, int **jnum, const double cpu_time,
-                       bool &success, int domainDim, tagint* tag);
+                       bool &success);
         // --------------------------- TEXTURES -----------------------------
 
         UCL_Texture cv_tex, e_tex, rho_tex, de_tex, drho_tex;
@@ -80,8 +80,9 @@ namespace LAMMPS_AL {
         int _lj_types;
 
     private:
+	int domainDim;
         bool _allocated;
-        void loop(const bool _eflag, const bool _vflag, int domainDim, tagint* tag);
+        void loop(const bool _eflag, const bool _vflag);
     };
 
 }

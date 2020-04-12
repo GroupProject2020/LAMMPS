@@ -29,7 +29,7 @@ using namespace LAMMPS_NS;
 int lj_sph_gpu_init(const int ntypes, double **cutsq, double **host_cutsq,
                  double **host_cut, double **host_mass, const int nlocal,
                  const int nall, const int max_nbors, const int maxspecial,
-                 const double cell_size, int &gpu_mode, FILE *screen);
+                 const double cell_size, int &gpu_mode, FILE *screen, int domainDim);
 
 void lj_sph_gpu_reinit(const int ntypes, double **cutsq, double **host_cutsq,
                        double **host_cut, double **host_mass);
@@ -43,14 +43,14 @@ int ** ljl_gpu_compute_n(const int ago, const int inum_full,
                          tagint **special, const bool eflag, const bool vflag,
                          const bool eatom, const bool vatom, int &host_start,
                          int **ilist, int **jnum, const double cpu_time,
-                         bool &success, int domainDim, tagint *tag);
+                         bool &success);
 void ljl_gpu_compute(const int ago, const int inum_full, const int nall,
                      double **host_x, double **host_v, double **host_cv,
                      double **host_e, double **host_rho, double **host_de,
                      double **host_drho, int *host_type, int *ilist, int *numj,
                      int **firstneigh, const bool eflag, const bool vflag,
                      const bool eatom, const bool vatom, int &host_start,
-                     const double cpu_time, bool &success, int domainDim, tagint *tag);
+                     const double cpu_time, bool &success, tagint *tag);
 double lj_sph_gpu_bytes();
 
 

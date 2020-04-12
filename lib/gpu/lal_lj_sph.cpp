@@ -15,7 +15,7 @@ namespace LAMMPS_AL {
 extern Device<PRECISION,ACC_PRECISION> device;
 
 template <class numtyp, class acctyp>
-LJ_SPHT::LJ_SPH() : BaseAtomicSPH<numtyp,acctyp>(), _allocated(false) {
+LJ_SPHT::LJ_SPH() : BaseAtomic<numtyp,acctyp>(), _allocated(false) {
 }
 
 template <class numtyp, class acctyp>
@@ -33,13 +33,13 @@ int LJ_SPHT::init(const int ntypes, double **host_cutsq,
               double **host_cut, double **host_mass,
               const int nlocal, const int nall, const int max_nbors,
               const int maxspecial, const double cell_size,
-              const double gpu_split, FILE *screen) {
+              const double gpu_split, FILE *screen, int domainDim) {
     int success;
     success=this->init_atomic(nlocal,nall,max_nbors,maxspecial,cell_size,gpu_split,
-                              _screen,lj,"k_lj_sph");
+                              screen,lj_sph,"k_lj_sph");
     if (success!=0)
         return success;
-
+    this->domainDim = domainDim;
     // If atom type constants fit in shared memory use fast kernel
     int lj_types=ntypes;
     shared_types=false;
@@ -96,7 +96,7 @@ void LJ_SPHT::reinit(const int ntypes, double **host_cutsq,
     for (int i=0; i<_lj_types*_lj_types; i++)
         host_write[i]=0.0;
 
-    this->atom->type_pack4(ntypes,lj_types,cuts,host_write,host_cutsq,host_cut,
+    this->atom->type_pack4(ntypes,_lj_types,cuts,host_write,host_cutsq,host_cut,
                            host_mass);
 }
 
@@ -121,57 +121,59 @@ double LJ_SPHT::host_memory_usage() const {
     return this->host_memory_usage_atomic()+sizeof(LJ_SPH<numtyp,acctyp>);
 }
 
-void LJ_SPHT::compute(const int ago, const int inum_full, const int nall,
+template <class numtyp, class acctyp>
+void LJ_SPHT::compute(const int f_ago, const int inum_full, const int nall,
                       double **host_x, double **host_v, double **host_cv,
                       double **host_e, double **host_rho, double **host_de,
                       double **host_drho, int *host_type, int *ilist, int *numj,
                       int **firstneigh, const bool eflag, const bool vflag,
                       const bool eatom, const bool vatom, int &host_start,
-                      const double cpu_time, bool &success, int domainDim, tagint* tag){
-    acc_timers();
+                      const double cpu_time, bool &success, tagint* tag){
+    this->acc_timers();
     if (inum_full==0) {
-        host_start=0;
+        this->host_start=0;
         // Make sure textures are correct if realloc by a different hybrid style
-        resize_atom(0,nall,success);
-        zero_timers();
+        this->resize_atom(0,nall,success);
+        this->zero_timers();
         return;
     }
 
-    int ago=hd_balancer.ago_first(f_ago);
-    int inum=hd_balancer.balance(ago,inum_full,cpu_time);
-    ans->inum(inum);
-    host_start=inum;
+    int ago=this->hd_balancer.ago_first(f_ago);
+    int inum=this->hd_balancer.balance(ago,inum_full,cpu_time);
+    this->ans->inum(inum);
+    this->host_start=inum;
 
     if (ago==0) {
-        reset_nbors(nall, inum, ilist, numj, firstneigh, success);
+        this->reset_nbors(nall, inum, ilist, numj, firstneigh, success);
         if (!success)
             return;
     }
 
-    atom->cast_x_data(host_x,host_type);
-    atom->cast_v_data(host_v, tag);
+    this->atom->cast_x_data(host_x,host_type);
+    this->atom->cast_v_data(host_v, tag);
     this->cast_cv_data(host_cv);
     this->cast_e_data(host_e);
     this->cast_rho_data(host_rho);
     this->cast_de_data(host_de);
     this->cast_drho_data(host_drho);
 
-    hd_balancer.start_timer();
-    atom->add_x_data(host_x,host_type);
-    atom->add_v_data(host_v,tag);
+    this->hd_balancer.start_timer();
+    this->atom->add_x_data(host_x,host_type);
+    this->atom->add_v_data(host_v,tag);
     this->add_cv_data();
     this->add_e_data();
     this->add_rho_data();
     this->add_de_data();
     this->add_drho_data();
 
-    loop(eflag,vflag, domainDim);
-    ans->copy_answers(eflag,vflag,eatom,vatom,ilist);
-    device->add_ans_object(ans);
-    hd_balancer.stop_timer();
+    this->loop(eflag,vflag, domainDim);
+    this->ans->copy_answers(eflag,vflag,eatom,vatom,ilist);
+    this->device->add_ans_object(this->ans);
+    this->hd_balancer.stop_timer();
 }
 
-int ** compute(const int ago, const int inum_full,
+template <class numtyp, class acctyp>
+int ** LJ_SPHT::compute(const int ago, const int inum_full,
                    const int nall, double **host_x, double **host_v,
                    double **host_cv, double **host_e, double **host_rho,
                    double **host_de, double **host_drho, int *host_type,
@@ -179,8 +181,8 @@ int ** compute(const int ago, const int inum_full,
                    tagint **special, const bool eflag, const bool vflag,
                    const bool eatom, const bool vatom, int &host_start,
                    int **ilist, int **jnum, const double cpu_time,
-                   bool &success, int domainDim, tagint* tag){
-    acc_timers();
+                   bool &success){
+    this->acc_timers();
     if (inum_full==0) {
         host_start=0;
         // Make sure textures are correct if realloc by a different hybrid style
@@ -200,18 +202,18 @@ int ** compute(const int ago, const int inum_full,
                         sublo, subhi, tag, nspecial, special, success);
         if (!success)
             return NULL;
-        atom->cast_v_data(host_v,tag);
+        this->atom->cast_v_data(host_v,tag);
         this->cast_cv_data(host_cv);
         this->cast_e_data(host_e);
         this->cast_rho_data(host_rho);
         this->cast_de_data(host_de);
         this->cast_drho_data(host_drho);
-        hd_balancer.start_timer();
+        this->hd_balancer.start_timer();
     } else {
-        atom->cast_x_data(host_x,host_type);
-        atom->cast_v_data(host_v,tag);
-        hd_balancer.start_timer();
-        atom->add_x_data(host_x,host_type);
+        this->atom->cast_x_data(host_x,host_type);
+        this->atom->cast_v_data(host_v,tag);
+        this->hd_balancer.start_timer();
+        this->atom->add_x_data(host_x,host_type);
     }
     this->add_cv_data();
     this->add_e_data();
@@ -221,10 +223,10 @@ int ** compute(const int ago, const int inum_full,
     *ilist=nbor->host_ilist.begin();
     *jnum=nbor->host_acc.begin();
 
-    loop(eflag,vflag, domainDim, tag);
-    ans->copy_answers(eflag,vflag,eatom,vatom);
-    device->add_ans_object(ans);
-    hd_balancer.stop_timer();
+    this->loop(eflag,vflag);
+    this->ans->copy_answers(eflag,vflag,eatom,vatom);
+    this->device->add_ans_object(ans);
+    this->hd_balancer.stop_timer();
 
     return nbor->host_jlist.begin()-host_start;
 }
@@ -232,7 +234,7 @@ int ** compute(const int ago, const int inum_full,
 // Calculate energies, forces, and torques
 // ---------------------------------------------------------------------------
 template <class numtyp, class acctyp>
-void LJ_SPHT::loop(const bool _eflag, const bool _vflag, int DomainDim, tagint* tag) {
+void LJ_SPHT::loop(const bool _eflag, const bool _vflag) {
     // Compute the block size and grid size to keep all cores busy
     const int BX=this->block_size();
     int eflag, vflag;
@@ -256,18 +258,18 @@ void LJ_SPHT::loop(const bool _eflag, const bool _vflag, int DomainDim, tagint* 
         this->k_pair_fast.set_size(GX,BX);
         this->k_pair_fast.run(&this->atom->x, &this->atom->v, &cv,
                               &e, &rho, &de,
-                              &drho, &this->atom->cuts,
+                              &drho, &this->cuts,
                               &this->nbor->dev_nbor, &this->_nbor_data->begin(),
                               &this->ans->force, &this->ans->engv, &eflag, &vflag,
-                              &ainum, &nbor_pitch, &this->_threads_per_atom, DomainDim, tag);
+                              &ainum, &nbor_pitch, &this->_threads_per_atom, this->domainDim);
     } else {
         this->k_pair.set_size(GX,BX);
         this->k_pair.run(&this->atom->x, &this->atom->v, &cv,
                          &e, &rho, &de,
-                         &tdrho, &this->atom->cuts, &_lj_types,
+                         &drho, &this->cuts, &_lj_types,
                          &this->nbor->dev_nbor, &this->_nbor_data->begin(),
                          &this->ans->force, &this->ans->engv, &eflag, &vflag,
-                         &ainum, &nbor_pitch, &this->_threads_per_atom, DomainDim, tag);
+                         &ainum, &nbor_pitch, &this->_threads_per_atom, this->domainDim);
     }
     this->time_pair.stop();
 }

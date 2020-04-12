@@ -27,6 +27,39 @@ texture<int2> drho_tex;
 #define drho_tex drho_
 #endif
 
+__device__ void LJEOS2(double rho, double e, double cv, double *p, double *c) {
+  double T = e/cv;
+  double beta = 1.0 / T;
+  double beta_sqrt = sqrt(beta);
+  double x = rho * sqrt(beta_sqrt);
+
+  double xsq = x * x;
+  double xpow3 = xsq * x;
+  double xpow4 = xsq * xsq;
+
+  /* differential of Helmholtz free energy w.r.t. x */
+  double diff_A_NkT = 3.629 + 7.264*x - beta*(3.492 - 18.698*x + 35.505*xsq - 31.816*xpow3 + 11.195*xpow4)
+                    - beta_sqrt*(5.369 + 13.16*x + 18.525*xsq - 17.076*xpow3 + 9.32*xpow4)
+                    + 10.4925*xsq + 11.46*xpow3 + 2.176*xpow4*xpow4*x;
+
+ /* differential of Helmholtz free energy w.r.t. x^2 */
+  double d2A_dx2 = 7.264 + 20.985*x \
+                 + beta*(18.698 - 71.01*x + 95.448*xsq - 44.78*xpow3)\
+                 - beta_sqrt*(13.16 + 37.05*x - 51.228*xsq + 37.28*xpow3)\
+                 + 34.38*xsq + 19.584*xpow4*xpow4;
+
+  // p = rho k T * (1 + rho * d(A/(NkT))/drho)
+  // dx/drho = rho/x
+  *p = rho * T * (1.0 + diff_A_NkT * x); // pressure
+  double csq = T * (1.0 + 2.0 * diff_A_NkT * x + d2A_dx2 * x * x); // soundspeed squared
+  if (csq > 0.0) {
+    *c = sqrt(csq); // soundspeed
+  } else {
+    *c = 0.0;
+  }
+}
+
+
 __kernel void k_lj_sph(const __global numtyp4 *restrict x_,
                        const __global numtyp4 *restrict v_,
                        const __global numtyp *restrict cv_,
@@ -42,7 +75,7 @@ __kernel void k_lj_sph(const __global numtyp4 *restrict x_,
                        __global acctyp *restrict engv,
                        const int eflag, const int vflag, const int inum,
                        const int nbor_pitch,
-                       const int t_per_atom, int DomainDim){ //TODO: arguments?
+                       const int t_per_atom, int domainDim){ //TODO: arguments?
   int tid, ii, offset;
   atom_info(t_per_atom,ii,tid,offset);
   double h, ih, ihsq, ihcub, wfd, fi, ci, fj, cj;
@@ -67,7 +100,7 @@ __kernel void k_lj_sph(const __global numtyp4 *restrict x_,
     double ei; fetch(ei, i, cv_tex);
     double rhoi; fetch(rhoi, i, cv_tex);
 
-    LJEOS2(rhoi,ei,cvi, &fi; &ci);
+    LJEOS2(rhoi,ei,cvi, &fi, &ci);
     fi /= (rhoi * rhoi);
 
     int itype=ix.w;
@@ -121,7 +154,7 @@ __kernel void k_lj_sph(const __global numtyp4 *restrict x_,
 
         // apply long-range correction to model a LJ fluid with cutoff
         // this implies that the modelled LJ fluid has cutoff == SPH cutoff
-        lrc = - 11.1701 * (ihcub * ihcub * ihcub - 1.5 * ihcub);
+        double lrc = - 11.1701 * (ihcub * ihcub * ihcub - 1.5 * ihcub);
         fi += lrc;
         fj += lrc;
 
@@ -142,12 +175,12 @@ __kernel void k_lj_sph(const __global numtyp4 *restrict x_,
         fpair = -imass * jmass * (fi + fj + fvisc) * wfd;
         deltaE = -0.5 * fpair * delVdotDelR;
 
-        f.x+=delx*force;
-        f.y+=dely*force;
-        f.z+=delz*force;
+        f.x+=delx*fpair;
+        f.y+=dely*fpair;
+        f.z+=delz*fpair;
 
-        double dei; fetch(dei, i, dcv_tex);
-        double drhoi; fetch(drhoi, i, dcv_tex);
+        double dei; fetch(dei, i, de_tex);
+        double drhoi; fetch(drhoi, i, drho_tex);
 
         // and change in density
         drhoi += jmass * delVdotDelR * wfd;
@@ -156,12 +189,12 @@ __kernel void k_lj_sph(const __global numtyp4 *restrict x_,
         dei += deltaE;
 
         if (vflag>0) {
-          virial[0] += delx*delx*force;
-          virial[1] += dely*dely*force;
-          virial[2] += delz*delz*force;
-          virial[3] += delx*dely*force;
-          virial[4] += delx*delz*force;
-          virial[5] += dely*delz*force;
+          virial[0] += delx*delx*fpair;
+          virial[1] += dely*dely*fpair;
+          virial[2] += delz*delz*fpair;
+          virial[3] += delx*dely*fpair;
+          virial[4] += delx*delz*fpair;
+          virial[5] += dely*delz*fpair;
         }
       }
 
@@ -185,7 +218,7 @@ __kernel void k_lj_sph_fast(const __global numtyp4 *restrict x_,
                        __global acctyp *restrict engv,
                        const int eflag, const int vflag, const int inum,
                        const int nbor_pitch,
-                       const int t_per_atom), int DomainDim{ //TODO: arguments?
+                       const int t_per_atom, int domainDim){ //TODO: arguments?
   int tid, ii, offset;
   atom_info(t_per_atom,ii,tid,offset);
   double h, ih, ihsq, ihcub, wfd, fi, ci, fj, cj;
@@ -217,7 +250,7 @@ __kernel void k_lj_sph_fast(const __global numtyp4 *restrict x_,
     double ei; fetch(ei, i, cv_tex);
     double rhoi; fetch(rhoi, i, cv_tex);
 
-    LJEOS2(rhoi,ei,cvi, &fi; &ci);
+    LJEOS2(rhoi,ei,cvi, &fi, &ci);
     fi /= (rhoi * rhoi);
     int iw=ix.w;
     int itype=fast_mul((int)MAX_SHARED_TYPES,iw);
@@ -272,7 +305,7 @@ __kernel void k_lj_sph_fast(const __global numtyp4 *restrict x_,
 
         // apply long-range correction to model a LJ fluid with cutoff
         // this implies that the modelled LJ fluid has cutoff == SPH cutoff
-        lrc = - 11.1701 * (ihcub * ihcub * ihcub - 1.5 * ihcub);
+        double lrc = - 11.1701 * (ihcub * ihcub * ihcub - 1.5 * ihcub);
         fi += lrc;
         fj += lrc;
 
@@ -293,26 +326,26 @@ __kernel void k_lj_sph_fast(const __global numtyp4 *restrict x_,
         fpair = -imass * jmass * (fi + fj + fvisc) * wfd;
         deltaE = -0.5 * fpair * delVdotDelR;
 
-        f.x+=delx*force;
-        f.y+=dely*force;
-        f.z+=delz*force;
+        f.x+=delx*fpair;
+        f.y+=dely*fpair;
+        f.z+=delz*fpair;
 
         double dei; //fetch(dei, i, dcv_tex);
         double drhoi; //fetch(drhoi, i, dcv_tex);
 
         // and change in density
-        drho_[i] += jmass * delVdotDelR * wfd;
+        //drho_[i] += jmass * delVdotDelR * wfd;
 
         // change in thermal energy
-        de_[i] += deltaE;
+        //de_[i] += deltaE;
 
         if (vflag>0) {
-          virial[0] += delx*delx*force;
-          virial[1] += dely*dely*force;
-          virial[2] += delz*delz*force;
-          virial[3] += delx*dely*force;
-          virial[4] += delx*delz*force;
-          virial[5] += dely*delz*force;
+          virial[0] += delx*delx*fpair;
+          virial[1] += dely*dely*fpair;
+          virial[2] += delz*delz*fpair;
+          virial[3] += delx*dely*fpair;
+          virial[4] += delx*delz*fpair;
+          virial[5] += dely*delz*fpair;
         }
       }
 
