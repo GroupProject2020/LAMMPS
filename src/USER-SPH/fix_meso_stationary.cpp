@@ -16,6 +16,7 @@
 #include "force.h"
 #include "update.h"
 #include "error.h"
+#include "viscosity.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -61,6 +62,9 @@ void FixMesoStationary::initial_integrate(int /*vflag*/) {
   double *drho = atom->drho;
   double *e = atom->e;
   double *de = atom->de;
+  double *viscosities = atom->viscosities;
+  Viscosity* viscosity = atom->viscosity;
+  double *cv = atom->cv;
 
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
@@ -73,6 +77,7 @@ void FixMesoStationary::initial_integrate(int /*vflag*/) {
     if (mask[i] & groupbit) {
       e[i] += dtf * de[i]; // half-step update of particle internal energy
       rho[i] += dtf * drho[i]; // ... and density
+      viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
     }
   }
 }

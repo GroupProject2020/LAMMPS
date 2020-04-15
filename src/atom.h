@@ -89,6 +89,7 @@ class Atom : protected Pointers {
   double *rho,*drho,*e,*de,*cv;
   double **vest;
   Viscosity *viscosity;
+  double *viscosities;
 
   // USER-SMD package
 

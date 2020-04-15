@@ -71,6 +71,7 @@ class AtomVecMeso : public AtomVec {
   double **x,**v,**f;
   double *rho, *drho, *e, *de, *cv;
   double **vest; // estimated velocity during force computation
+  double *viscosities;
 };
 
 }

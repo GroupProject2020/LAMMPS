@@ -140,8 +140,9 @@ void PairSPHLJ::compute(int eflag, int vflag) {
         // artificial viscosity (Monaghan 1992)
         if (delVdotDelR < 0.) {
           mu = h * delVdotDelR / (rsq + 0.01 * h * h);
-            double T = ((e[nlocal]-500)/(0.1*4117)+300);
-          fvisc = -viscosity->compute_visc(T) * (ci + cj) * mu / (rho[i] + rho[j]);
+            double T = e[i]/cv[i];
+            fvisc = -viscosity->compute_visc(T) * (ci + cj) * mu / (rho[i] + rho[j]);
+
         } else {
           fvisc = 0.;
         }

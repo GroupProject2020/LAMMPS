@@ -85,9 +85,12 @@ void FixMeso::initial_integrate(int /*vflag*/) {
   double *rho = atom->rho;
   double *drho = atom->drho;
   double *e = atom->e;
+  double *cv = atom->cv;
   double *de = atom->de;
   double *mass = atom->mass;
   double *rmass = atom->rmass;
+  double *viscosities = atom->viscosities;
+  Viscosity* viscosity = atom->viscosity;
   int rmass_flag = atom->rmass_flag;
 
   int *type = atom->type;
@@ -122,6 +125,9 @@ void FixMeso::initial_integrate(int /*vflag*/) {
       x[i][0] += dtv * v[i][0];
       x[i][1] += dtv * v[i][1];
       x[i][2] += dtv * v[i][2];
+
+      viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
+      //printf("e : %lf, cv : %lf, viscosity : %lf\n", e[i], cv[i], viscosities[i]);
     }
   }
 }
@@ -137,10 +143,13 @@ void FixMeso::final_integrate() {
   double *e = atom->e;
   double *de = atom->de;
   double *rho = atom->rho;
+  double *cv = atom->cv;
   double *drho = atom->drho;
   int *type = atom->type;
   int *mask = atom->mask;
   double *mass = atom->mass;
+  double *viscosities = atom->viscosities;
+  Viscosity* viscosity = atom->viscosity;
   int nlocal = atom->nlocal;
   if (igroup == atom->firstgroup)
     nlocal = atom->nfirst;
@@ -162,6 +171,9 @@ void FixMeso::final_integrate() {
 
       e[i] += dtf * de[i];
       rho[i] += dtf * drho[i];
+
+      //viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
+      //printf("e : %lf, cv : %lf, viscosity : %lf\n", e[i], cv[i], viscosities[i]);
     }
   }
 }
