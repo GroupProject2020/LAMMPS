@@ -37,6 +37,8 @@
 #include "utils.h"
 #include <string.h>
 #include "viscosity_four_parameter_exp.h"
+#include "viscosity_sutherland_law.h"
+#include "viscosity_power_law_gas.h"
 
 #ifdef LMP_USER_INTEL
 #include "neigh_request.h"
@@ -2365,6 +2367,25 @@ void Atom::add_viscosity(int narg, char **arg) {
         printf("Viscosity created\n");
     }
     else {
-        printf("Nothing implemented for %s", arg[0]);
+        if (!strcmp(arg[0], "SutherlandViscosityLaw")) {
+            if (narg != 3)
+                error->all(FLERR, "Wrong number of arguments for creation of four parameter exponential viscosity");
+            double A, B;
+            sscanf(arg[1], "%lg", &A);
+            sscanf(arg[2], "%lg", &B);
+            this->viscosity = new SutherlandViscosityLaw(A, B);
+            printf("Viscosity created\n");
+        } else {
+            if (!strcmp(arg[0], "PowerLawGas")) {
+                if (narg != 3)
+                    error->all(FLERR, "Wrong number of arguments for creation of four parameter exponential viscosity");
+                double B;
+                sscanf(arg[2], "%lg", &B);
+                this->viscosity = new PowerLawGas(B);
+                printf("Viscosity created\n");
+            } else {
+                printf("Nothing implemented for %s", arg[0]);
+            }
+        }
     }
 }
