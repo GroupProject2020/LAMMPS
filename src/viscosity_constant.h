@@ -1,0 +1,26 @@
+//
+// Created by wall-e on 21/04/2020.
+//
+
+#ifndef LAMMPS_VISCOSITY_CONSTANT_H
+#define LAMMPS_VISCOSITY_CONSTANT_H
+
+
+#include "math.h"
+#include "viscosity.h"
+
+namespace LAMMPS_NS{
+
+    class ViscosityConstant : public Viscosity {
+    private:
+        double A;
+    public:
+        ViscosityConstant(double A);
+
+        double compute_visc(double temperature) override;
+
+    };
+};
+
+
+#endif //LAMMPS_VISCOSITY_CONSTANT_H

@@ -163,8 +163,9 @@ void PairSPHTaitwater::compute(int eflag, int vflag) {
             mu = h * delVdotDelR / (rsq + 0.01 * h * h);
             double T = e[i]/cv[i];
 
-            fvisc = -viscosity->compute_visc(T) * (soundspeed[itype]+ soundspeed[jtype]) * mu / (rho[i] + rho[j]);
+            fvisc = -viscosities[i] * (soundspeed[itype]+ soundspeed[jtype]) * mu / (rho[i] + rho[j]);
             //printf("%lf ", viscosity->compute_visc(T));
+            //printf(" T:%lg ",T);
             //printf("%lf ", viscosities[i]- viscosity->compute_visc(T));
 
         } else {

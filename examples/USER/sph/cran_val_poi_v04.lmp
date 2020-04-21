@@ -1,0 +1,99 @@
+atom_style         meso
+dimension          2
+newton             on
+boundary           p f p
+units              si
+
+variable	res	equal 	100
+variable	H	equal 	0.005
+variable	dx	equal	${H}/${res}
+variable	hh	equal	1.5*${dx}
+variable    	c	equal 	2.0 
+variable        dt 	equal 	0.05*${hh}/${c}
+variable	den	equal	1000.0
+variable	vis	equal	1.000
+variable	fb	equal	0.21235955
+variable	dd	equal	0.00000001
+variable        Cv      equal   4200
+variable        Np      equal   5160
+variable        Area    equal   (6.00e-03)*(0.045e-03+1.05e-03)
+variable        m       equal   ${den}*${Area}/${Np}
+
+print m=${m}
+
+
+region             box block 0.00e-03 6.00e-03 -0.045e-03 1.05e-03 -1.0e-6 1.0e-6 units box
+create_box         3 box
+
+region             water block 0.0e-03 6.00e-03 0.001e-03 0.999e-03 EDGE EDGE side in units box 
+lattice            sq2 ${dx}
+create_atoms       1 region water
+
+region             bc_bottom block EDGE EDGE +0.001e-03 EDGE EDGE EDGE side out units box 
+lattice            sq2 ${dx}
+create_atoms       2 region bc_bottom
+
+region             bc_top block EDGE EDGE EDGE 0.999e-03 EDGE EDGE side out units box 
+lattice            sq2 ${dx}
+create_atoms       3 region bc_top
+
+
+group              water        type 1
+group              bc_bottom    type 2 
+group              bc_top    	type 3  
+
+
+mass               1 ${m}
+mass               2 ${m}
+mass               3 ${m}
+
+variable           Twater equal 0
+variable           Twall equal 100
+
+variable 	   e_water equal 0
+variable  	   e_wall  equal (${Twall}-${Twater})*${Cv}*${m}
+
+set 		   group water meso/e ${e_water}
+set 		   group bc_top meso/e ${e_wall}
+set 		   group bc_bottom meso/e ${e_wall}
+
+set                group all meso/rho ${den}
+
+
+pair_style         hybrid/overlay sph/taitwater sph/heatconduction
+pair_coeff         * * sph/taitwater ${den} ${c} ${vis} ${hh}
+pair_coeff         * * sph/heatconduction ${dd} ${hh}
+
+fix                gfix water gravity ${fb} vector 1 0 0
+fix                2d_fix all enforce2d
+
+compute            rho_peratom all meso/rho/atom
+compute            ie_peratom all meso/e/atom
+compute		   viscosities_peratom all meso/viscosities/atom
+
+variable           T atom  (${Twater}+c_ie_peratom/(${m}*${Cv}))
+
+compute            esph all reduce sum c_ie_peratom
+compute            ke all ke
+variable           etot equal c_esph+c_ke+f_gfix
+
+
+fix                dtfix	all 	dt/reset 1	NULL	${dt}	0.0005 units box 
+fix                int_water 	water meso
+fix                int_bc_t 	bc_top meso/fullstationary               #### Full stationary is a new fix to have constant position speed density and internal energy
+fix                int_bc_b 	bc_bottom meso/fullstationary #### Full stationary is a new fix to have constant position speed density and internal energy
+
+
+
+dump               dump_id all custom 100000 cran_val_poi_v01.lammpstrj id type xs ys zs vx vy mass c_rho_peratom c_ie_peratom v_T c_viscosities_peratom
+dump_modify        dump_id first yes
+thermo             10000
+thermo_style       custom step ke c_esph v_etot f_gfix press time f_dtfix
+thermo_modify      norm no
+
+neigh_modify       every 1 delay 0 check no one 10000
+variable           skin equal 0.03*${hh}
+neighbor           ${skin} bin 
+viscosity	   Arrhenius 1 0.0001
+
+run                1000000

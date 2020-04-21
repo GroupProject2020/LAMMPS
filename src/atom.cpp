@@ -39,6 +39,8 @@
 #include "viscosity_four_parameter_exp.h"
 #include "viscosity_sutherland_law.h"
 #include "viscosity_power_law_gas.h"
+#include "viscosity_arrhenius.h"
+#include "viscosity_constant.h"
 
 #ifdef LMP_USER_INTEL
 #include "neigh_request.h"
@@ -2355,21 +2357,21 @@ int Atom::memcheck(const char *str)
 }
 
 void Atom::add_viscosity(int narg, char **arg) {
-    if (narg<1) error->all(FLERR,"Too few arguments for creation of viscosity");
-    if (!strcmp(arg[0], "FourParameterExp")){
-        if (narg != 5) error->all(FLERR,"Wrong number of arguments for creation of four parameter exponential viscosity");
-        double A,B,C,D;
-        sscanf(arg[1],"%lg",&A);
-        sscanf(arg[2],"%lg",&B);
-        sscanf(arg[3],"%lg",&C);
-        sscanf(arg[4],"%lg",&D);
+    if (narg < 1) error->all(FLERR, "Too few arguments for creation of viscosity");
+    if (!strcmp(arg[0], "FourParameterExp")) {
+        if (narg != 5)
+            error->all(FLERR, "Wrong number of arguments for creation of four parameter exponential viscosity");
+        double A, B, C, D;
+        sscanf(arg[1], "%lg", &A);
+        sscanf(arg[2], "%lg", &B);
+        sscanf(arg[3], "%lg", &C);
+        sscanf(arg[4], "%lg", &D);
         this->viscosity = new ViscosityFourParameterExp(A, B, C, D);
         printf("Viscosity created\n");
-    }
-    else {
+    } else {
         if (!strcmp(arg[0], "SutherlandViscosityLaw")) {
             if (narg != 3)
-                error->all(FLERR, "Wrong number of arguments for creation of four parameter exponential viscosity");
+                error->all(FLERR, "Wrong number of arguments for creation of Sutherland viscosity");
             double A, B;
             sscanf(arg[1], "%lg", &A);
             sscanf(arg[2], "%lg", &B);
@@ -2377,14 +2379,34 @@ void Atom::add_viscosity(int narg, char **arg) {
             printf("Viscosity created\n");
         } else {
             if (!strcmp(arg[0], "PowerLawGas")) {
-                if (narg != 3)
-                    error->all(FLERR, "Wrong number of arguments for creation of four parameter exponential viscosity");
+                if (narg != 2)
+                    error->all(FLERR, "Wrong number of arguments for creation of power law gas viscosity");
                 double B;
-                sscanf(arg[2], "%lg", &B);
+                sscanf(arg[1], "%lg", &B);
                 this->viscosity = new PowerLawGas(B);
                 printf("Viscosity created\n");
             } else {
-                printf("Nothing implemented for %s", arg[0]);
+                if (!strcmp(arg[0], "Arrhenius")) {
+                    if (narg != 3)
+                        error->all(FLERR, "Wrong number of arguments for creation of Arrhenius viscosity");
+                    double A;
+                    double B;
+                    sscanf(arg[1], "%lg", &A);
+                    sscanf(arg[2], "%lg", &B);
+                    this->viscosity = new ViscosityArrhenius(A, B);
+                    printf("Viscosity created\n");
+                } else {
+                    if (!strcmp(arg[0], "Constant")) {
+                        if (narg != 2)
+                            error->all(FLERR, "Wrong number of arguments for creation of Constant viscosity");
+                        double A;
+                        sscanf(arg[1], "%lg", &A);
+                        this->viscosity = new ViscosityConstant(A);
+                        printf("Viscosity created\n");
+                    } else {
+                        printf("Nothing implemented for %s", arg[0]);
+                    }
+                }
             }
         }
     }

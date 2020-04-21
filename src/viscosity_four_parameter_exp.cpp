@@ -1,6 +1,3 @@
-//
-// Created by wall-e on 23/03/2020.
-//
 
 #include "viscosity_four_parameter_exp.h"
 
