@@ -62,6 +62,7 @@ void PairSPHIdealGas::compute(int eflag, int vflag) {
   double *e = atom->e;
   double *drho = atom->drho;
   double *cv = atom->cv;
+  double *viscosities = atom->viscosities;
   int *type = atom->type;
   int nlocal = atom->nlocal;
   int newton_pair = force->newton_pair;
@@ -131,8 +132,8 @@ void PairSPHIdealGas::compute(int eflag, int vflag) {
         if (delVdotDelR < 0.) {
           cj = sqrt(0.4*e[j]/jmass);
           mu = h * delVdotDelR / (rsq + 0.01 * h * h);
-            double T = e[i]/cv[i];
-          fvisc = -viscosity->compute_visc(T) * (ci + cj) * mu / (rho[i] + rho[j]);
+          viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
+          fvisc = - viscosities[i]* (ci + cj) * mu / (rho[i] + rho[j]);
         } else {
           fvisc = 0.;
         }

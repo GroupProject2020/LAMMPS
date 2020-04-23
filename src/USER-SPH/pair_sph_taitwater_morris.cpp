@@ -67,6 +67,7 @@ void PairSPHTaitwaterMorris::compute(int eflag, int vflag) {
   double *drho = atom->drho;
   double *e = atom->e;
   double* cv = atom->cv;
+  double* viscosities = atom->viscosities;
   int *type = atom->type;
   int nlocal = atom->nlocal;
   int newton_pair = force->newton_pair;
@@ -160,8 +161,8 @@ void PairSPHTaitwaterMorris::compute(int eflag, int vflag) {
         delVdotDelR = delx * velx + dely * vely + delz * velz;
 
         // Morris Viscosity (Morris, 1996)
-        double T = e[i]/cv[i];
-        fvisc = 2 * viscosity->compute_visc(T) / (rho[i] * rho[j]);
+        viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
+        fvisc = 2 * viscosities[i] / (rho[i] * rho[j]);
 
         fvisc *= imass * jmass * wfd;
 

@@ -161,12 +161,15 @@ void PairSPHTaitwater::compute(int eflag, int vflag) {
         // artificial viscosity (Monaghan 1992)
         if (delVdotDelR < 0.) {
             mu = h * delVdotDelR / (rsq + 0.01 * h * h);
-            double T = e[i]/cv[i];
-
-            fvisc = -viscosities[i] * (soundspeed[itype]+ soundspeed[jtype]) * mu / (rho[i] + rho[j]);
-            //printf("%lf ", viscosity->compute_visc(T));
-            //printf(" T:%lg ",T);
-            //printf("%lf ", viscosities[i]- viscosity->compute_visc(T));
+            //double T = e[i]/cv[i];
+            viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
+            /*printf("T: %lg ", T);
+            printf("e: %lg ", e[i]);
+            printf("viscosities: %lg\n", viscosities[i]);
+            printf("rho[%d]: %lg ", i, rho[i]);
+            printf("rho[%d]: %lg\n", j, rho[j]);*/
+            //double diff = viscosities[i]- viscosity->compute_visc(T);
+            fvisc = -viscosities[i]* (soundspeed[itype]+ soundspeed[jtype]) * mu / (rho[i] + rho[j]);
 
         } else {
           fvisc = 0.;
@@ -193,6 +196,7 @@ void PairSPHTaitwater::compute(int eflag, int vflag) {
           de[j] += deltaE;
           drho[j] += imass * delVdotDelR * wfd;
         }
+        //printf("f[%d][0] = %lg, f[%d][1] = %lg\n", i ,f[i][0] ,i, f[i][1]);
 
         if (evflag)
           ev_tally(i, j, nlocal, newton_pair, 0.0, 0.0, fpair, delx, dely, delz);

@@ -68,7 +68,7 @@ void FixMesoFullStationary::init() {
  ------------------------------------------------------------------------- */
 
 void FixMesoFullStationary::initial_integrate(int /*vflag*/) {
-
+  //printf("Initial Integrate");
   double *rho = atom->rho;
   double *drho = atom->drho;
   double *e = atom->e;
@@ -89,9 +89,6 @@ void FixMesoFullStationary::initial_integrate(int /*vflag*/) {
       e[i] +=0; // half-step update of particle internal energy
       rho[i] += 0; // ... and density
       viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
-      //printf("viscosities[%d] : %lg\n", i, viscosities[i]);
-      //printf("e[%d] : %lg\n", i, e[i]);
-      //printf("visco %lg\n",0.183*exp(1.9*cv[i]/e[i]));
     }
   }
 }
