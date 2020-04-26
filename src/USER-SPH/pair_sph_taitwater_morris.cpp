@@ -162,7 +162,7 @@ void PairSPHTaitwaterMorris::compute(int eflag, int vflag) {
 
         // Morris Viscosity (Morris, 1996)
         viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
-        fvisc = 2 * viscosities[i] / (rho[i] * rho[j]);
+        fvisc = 2 * 8*viscosities[i]/(h*soundspeed[itype]) / (rho[i] * rho[j]);
 
         fvisc *= imass * jmass * wfd;
 

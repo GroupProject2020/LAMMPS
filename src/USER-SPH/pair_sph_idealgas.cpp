@@ -133,7 +133,7 @@ void PairSPHIdealGas::compute(int eflag, int vflag) {
           cj = sqrt(0.4*e[j]/jmass);
           mu = h * delVdotDelR / (rsq + 0.01 * h * h);
           viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
-          fvisc = - viscosities[i]* (ci + cj) * mu / (rho[i] + rho[j]);
+          fvisc = -8*viscosities[i]/(h*ci)* (ci + cj) * mu / (rho[i] + rho[j]);
         } else {
           fvisc = 0.;
         }

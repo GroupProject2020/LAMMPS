@@ -47,17 +47,22 @@ mass               1 ${m}
 mass               2 ${m}
 mass               3 ${m}
 
-variable           Twater equal 275
-variable           Twall equal 375
+variable           TwallCold equal 295
+variable	   DeltaT equal 50
+variable           Twater equal 295+${DeltaT}/2
 
-variable 	   e_water equal 0.6 
-variable  	   e_wall  equal (${Twall}-${Twater})*${Cv}*${m}+0.6
+
+variable 	   e_water equal (${Twater})*${Cv}*${m}
+variable  	   e_wall_cold  equal (${TwallCold})*${Cv}*${m}
+variable	   e_wall_hot equal (${TwallCold}+${DeltaT})*${Cv}*${m}
+variable	   cv_input equal ${Cv}*${m}
 
 set 		   group water meso/e ${e_water}
-set 		   group bc_top meso/e ${e_wall}
-set 		   group bc_bottom meso/e ${e_wall}
+set 		   group bc_top meso/e ${e_wall_hot}
+set 		   group bc_bottom meso/e ${e_wall_cold}
 
 set                group all meso/rho ${den}
+set		   group all meso/cv ${cv_input}
 
 
 pair_style         hybrid/overlay sph/taitwater sph/heatconduction
@@ -71,13 +76,12 @@ compute            rho_peratom all meso/rho/atom
 compute            ie_peratom all meso/e/atom
 compute		   viscosities_peratom all meso/viscosities/atom
 
-variable           T atom  (${Twater}+c_ie_peratom/(${m}*${Cv}))
+variable           T atom  (c_ie_peratom/(${m}*${Cv}))
 
 compute            esph all reduce sum c_ie_peratom
 compute            ke all ke
 variable           etot equal c_esph+c_ke+f_gfix
 variable	   U atom sqrt(vx*vx+vy*vy+vz*vz)
-#variable	   U_norm atom v_U/max(v_U)
 
 fix                dtfix	all 	dt/reset 1	NULL	${dt}	0.0005 units box 
 fix                int_water 	water meso
@@ -86,7 +90,7 @@ fix                int_bc_b 	bc_bottom meso/fullstationary #### Full stationary 
 
 
 
-dump               dump_id all custom 100000 cran_val_poi_v01.lammpstrj id type xs ys zs vx vy mass c_rho_peratom c_ie_peratom v_T c_viscosities_peratom v_U #v_U_norm
+dump               dump_id all custom 100000 cran_val_poi_v01.lammpstrj id type xs ys zs vx vy mass c_rho_peratom c_ie_peratom v_T c_viscosities_peratom v_U 
 dump_modify        dump_id first yes
 thermo             10000
 thermo_style       custom step ke c_esph v_etot f_gfix press time f_dtfix
@@ -95,6 +99,6 @@ thermo_modify      norm no lost warn
 neigh_modify       every 1 delay 0 check no 
 variable           skin equal 0.03*${hh}
 neighbor           ${skin} bin 
-viscosity	   Arrhenius 0.183 1.8799 
+viscosity	   Arrhenius 0.000000183 1879.9 
 
-run                1000000
+run                4000000

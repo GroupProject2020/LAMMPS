@@ -61,7 +61,7 @@ void PairSPHLJ::compute(int eflag, int vflag) {
   double *e = atom->e;
   double *cv = atom->cv;
   double *drho = atom->drho;
-  double *vicosities = atom->viscosities;
+  double *viscosities = atom->viscosities;
   int *type = atom->type;
   int nlocal = atom->nlocal;
   int newton_pair = force->newton_pair;
@@ -142,7 +142,7 @@ void PairSPHLJ::compute(int eflag, int vflag) {
         if (delVdotDelR < 0.) {
           mu = h * delVdotDelR / (rsq + 0.01 * h * h);
             viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
-            fvisc = -viscosities[i] * (ci + cj) * mu / (rho[i] + rho[j]);
+            fvisc = -8*viscosities[i]/(h*ci) * (ci + cj) * mu / (rho[i] + rho[j]);
 
         } else {
           fvisc = 0.;
