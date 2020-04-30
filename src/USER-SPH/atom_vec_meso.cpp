@@ -36,7 +36,7 @@ AtomVecMeso::AtomVecMeso(LAMMPS *lmp) : AtomVec(lmp)
   comm_f_only = 0; // we also communicate de and drho in reverse direction
   size_forward = 8; // 3 + rho + e + vest[3], that means we may only communicate 5 in hybrid
   size_reverse = 5; // 3 + drho + de
-  size_border = 12; // 6 + rho + e + vest[3] + cv
+  size_border = 13; // 6 + rho + e + vest[3] + cv + viscosities
   size_velocity = 3;
   size_data_atom = 8;
   size_data_vel = 4;

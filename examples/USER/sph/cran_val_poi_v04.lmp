@@ -48,7 +48,7 @@ mass               2 ${m}
 mass               3 ${m}
 
 variable           TwallCold equal 295
-variable	   DeltaT equal 50
+variable	   DeltaT equal 25
 variable           Twater equal 295+${DeltaT}/2
 
 
@@ -66,7 +66,7 @@ set		   group all meso/cv ${cv_input}
 
 
 pair_style         hybrid/overlay sph/taitwater sph/heatconduction
-pair_coeff         * * sph/taitwater ${den} ${c} ${vis} ${hh}
+pair_coeff         * * sph/taitwater ${den} 2 ${vis} ${hh}
 pair_coeff         * * sph/heatconduction ${dd} ${hh}
 
 fix                gfix water gravity ${fb} vector 1 0 0
@@ -99,6 +99,6 @@ thermo_modify      norm no lost warn
 neigh_modify       every 1 delay 0 check no 
 variable           skin equal 0.03*${hh}
 neighbor           ${skin} bin 
-viscosity	   Arrhenius 0.000000183 1879.9 
+viscosity	   Arrhenius 0.000183 1879.9 
 
-run                4000000
+run                10000000
