@@ -171,8 +171,6 @@ void FixMeso::final_integrate() {
       e[i] += dtf * de[i];
       rho[i] += dtf * drho[i];
 
-      //viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
-      //printf("e : %lf, cv : %lf, viscosity : %lf\n", e[i], cv[i], viscosities[i]);
     }
   }
 }

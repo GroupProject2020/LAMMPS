@@ -35,8 +35,9 @@ compute            rho_peratom all meso/rho/atom
 compute            e_peratom all meso/e/atom
 compute            esph all reduce sum c_e_peratom
 compute            ke all ke
+compute		   viscosities_peratom all meso/viscosities/atom
 variable           etot equal c_esph+c_ke+f_gfix
-
+variable	   visc equal ${h}*${c}*1000.0/8.0
 
 
 
@@ -48,15 +49,14 @@ fix                integrate_water_fix water meso
 
 # time-integrate only internal energy and density of boundary particles
 fix                integrate_bc_fix bc meso/stationary
-dump               dump_id all custom 100 dump.lammpstrj id type xs ys zs mass c_rho_peratom c_e_peratom fx fy v_tempe v_tempera
+dump               dump_id all custom 100 dump.lammpstrj id type xs ys zs mass c_rho_peratom c_e_peratom fx fy v_tempe v_tempera c_viscosities_peratom
 dump_modify        dump_id first yes
 thermo             10
 thermo_style       custom step ke c_esph v_etot f_gfix press time f_dtfix
-thermo_modify      norm no lost warn
+thermo_modify      norm no #lost warn
 
 neigh_modify       every 5 delay 0 check no
 variable           skin equal 0.3*${h}
 neighbor           ${skin} bin # set Verlet list skin distance
-viscosity	   FourParameterExp 1.856e-11 4209 0.04527 -3.376e-5
-
+viscosity	   Constant ${visc} #FourParameterExp 1.856e-9 4209 0.04527 -3.376e-5
 run                ${nrun}

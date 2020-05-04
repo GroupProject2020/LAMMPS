@@ -1,7 +1,3 @@
-//
-// Created by wall-e on 21/04/2020.
-//
-
 #ifndef LAMMPS_VISCOSITY_CONSTANT_H
 #define LAMMPS_VISCOSITY_CONSTANT_H
 

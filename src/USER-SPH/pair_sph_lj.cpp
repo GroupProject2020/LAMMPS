@@ -137,12 +137,13 @@ void PairSPHLJ::compute(int eflag, int vflag) {
         // dot product of velocity delta and distance vector
         delVdotDelR = delx * (vxtmp - v[j][0]) + dely * (vytmp - v[j][1])
             + delz * (vztmp - v[j][2]);
-
+          viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
+          viscosities[j] = viscosity->compute_visc(e[j]/cv[j]);
         // artificial viscosity (Monaghan 1992)
         if (delVdotDelR < 0.) {
           mu = h * delVdotDelR / (rsq + 0.01 * h * h);
-            viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
-            fvisc = -8*viscosities[i]/(h*ci) * (ci + cj) * mu / (rho[i] + rho[j]);
+
+            fvisc = -4/h*(viscosities[i]/(ci*rho[i])+viscosities[j]/(cj*rho[j]))* (ci + cj) * mu / (rho[i] + rho[j]);
 
         } else {
           fvisc = 0.;

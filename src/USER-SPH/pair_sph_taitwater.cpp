@@ -162,24 +162,6 @@ void PairSPHTaitwater::compute(int eflag, int vflag) {
         // artificial viscosity (Monaghan 1992)
         if (delVdotDelR < 0.) {
             mu = h * delVdotDelR / (rsq + 0.01 * h * h);
-            //double T = e[i]/cv[i];
-            //viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
-            //printf("T: %lg ", T);
-           // printf("cv: %lg ", cv[i]);
-            //printf("e: %lg ", e[i]);
-            //printf("viscosities: %lg\n", viscosities[i]);
-            //double diff = viscosities[i]- viscosity->compute_visc(T);
-            /*if (8*viscosities[i]/(h*soundspeed[itype]) > 6) {
-                //printf("T: %lg ", T);
-                //printf("cv: %lg ", cv[i]);
-                //printf("e: %lg ", e[i]);
-                //printf("viscosities: %lg\n", viscosities[i]);
-                printf("new visc[%d]: %lg\n",i, 8*viscosities[i]/(h*soundspeed[itype]));
-
-            }*/
-            //printf("h: %lg ", h);
-            //printf("new visc[%d]: %lg\n",i, 4/h*(viscosities[i]/(soundspeed[itype]*rho[i])+viscosities[j]/(soundspeed[jtype]*rho[j])));
-            //printf("rho[i] : %lg", rho[i]);
             fvisc = -4/h*(viscosities[i]/(soundspeed[itype]*rho[i])+viscosities[j]/(soundspeed[jtype]*rho[j]))*(soundspeed[itype]+ soundspeed[jtype]) * mu / (rho[i] + rho[j]);
 
         } else {

@@ -1,7 +1,3 @@
-//
-// Created by wall-e on 23/03/2020.
-//
-
 #ifndef LAMMPS_VISCOSITY_FOURPARAMETEREXP_H
 #define LAMMPS_VISCOSITY_FOURPARAMETEREXP_H
 
