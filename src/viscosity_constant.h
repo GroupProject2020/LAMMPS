@@ -13,7 +13,7 @@ namespace LAMMPS_NS{
     public:
         ViscosityConstant(double A);
 
-        double compute_visc(double temperature) override;
+        double compute_visc(double temperature) override final;
 
     };
 };

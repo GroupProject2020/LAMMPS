@@ -65,7 +65,6 @@ void ComputeMesoViscositiesAtom::compute_peratom()
     for (int i = 0; i < nlocal; i++) {
         if (mask[i] & groupbit) {
             viscositiesVector[i] = viscosities[i];
-            //printf("viscosities[%d] : %lf\n", i, viscosities[i]);
         }
         else {
             viscositiesVector[i] = 0.0;

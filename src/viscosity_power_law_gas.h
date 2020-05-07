@@ -11,7 +11,7 @@ private:
 public:
     PowerLawGas(double B);
 
-    double compute_visc(double temperature) override;
+    double compute_visc(double temperature) override final;
 
 };
 

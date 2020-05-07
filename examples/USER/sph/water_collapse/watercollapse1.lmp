@@ -53,10 +53,12 @@ dump               dump_id all custom 100 dump.lammpstrj id type xs ys zs mass c
 dump_modify        dump_id first yes
 thermo             10
 thermo_style       custom step ke c_esph v_etot f_gfix press time f_dtfix
-thermo_modify      norm no #lost warn
+thermo_modify      norm no lost warn
 
 neigh_modify       every 5 delay 0 check no
 variable           skin equal 0.3*${h}
 neighbor           ${skin} bin # set Verlet list skin distance
-viscosity	   Constant ${visc} #FourParameterExp 1.856e-9 4209 0.04527 -3.376e-5
+viscosity	   Constant ${visc}  
+#viscosity	   FourParameterExp 1.856e-7 4209 0.04527 -3.376e-5 #Another example of viscosity
+
 run                ${nrun}

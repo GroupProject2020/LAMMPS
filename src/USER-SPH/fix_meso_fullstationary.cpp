@@ -88,7 +88,6 @@ void FixMesoFullStationary::initial_integrate(int /*vflag*/) {
     if (mask[i] & groupbit) {
       e[i] +=0; // half-step update of particle internal energy
       rho[i] += 0; // ... and density
-      viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
     }
   }
 }

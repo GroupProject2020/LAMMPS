@@ -125,8 +125,6 @@ void FixMeso::initial_integrate(int /*vflag*/) {
       x[i][0] += dtv * v[i][0];
       x[i][1] += dtv * v[i][1];
       x[i][2] += dtv * v[i][2];
-
-      viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
     }
   }
 }

@@ -36,6 +36,7 @@
 #include "error.h"
 #include "utils.h"
 #include <string.h>
+#include <iostream>
 #include "viscosity_four_parameter_exp.h"
 #include "viscosity_sutherland_law.h"
 #include "viscosity_power_law_gas.h"
@@ -2367,7 +2368,7 @@ void Atom::add_viscosity(int narg, char **arg) {
         sscanf(arg[3], "%lg", &C);
         sscanf(arg[4], "%lg", &D);
         this->viscosity = new ViscosityFourParameterExp(A, B, C, D);
-        printf("Viscosity created\n");
+        std::cout <<"Viscosity created" <<std::endl;
     } else {
         if (!strcmp(arg[0], "SutherlandViscosityLaw")) {
             if (narg != 3)
@@ -2376,7 +2377,7 @@ void Atom::add_viscosity(int narg, char **arg) {
             sscanf(arg[1], "%lg", &A);
             sscanf(arg[2], "%lg", &B);
             this->viscosity = new SutherlandViscosityLaw(A, B);
-            printf("Viscosity created\n");
+            std::cout <<"Viscosity created" <<std::endl;
         } else {
             if (!strcmp(arg[0], "PowerLawGas")) {
                 if (narg != 2)
@@ -2384,7 +2385,7 @@ void Atom::add_viscosity(int narg, char **arg) {
                 double B;
                 sscanf(arg[1], "%lg", &B);
                 this->viscosity = new PowerLawGas(B);
-                printf("Viscosity created\n");
+                std::cout <<"Viscosity created" <<std::endl;
             } else {
                 if (!strcmp(arg[0], "Arrhenius")) {
                     if (narg != 3)
@@ -2394,7 +2395,7 @@ void Atom::add_viscosity(int narg, char **arg) {
                     sscanf(arg[1], "%lg", &A);
                     sscanf(arg[2], "%lg", &B);
                     this->viscosity = new ViscosityArrhenius(A, B);
-                    printf("Viscosity created\n");
+                    std::cout <<"Viscosity created" <<std::endl;
                 } else {
                     if (!strcmp(arg[0], "Constant")) {
                         if (narg != 2)
@@ -2402,9 +2403,9 @@ void Atom::add_viscosity(int narg, char **arg) {
                         double A;
                         sscanf(arg[1], "%lg", &A);
                         this->viscosity = new ViscosityConstant(A);
-                        printf("Viscosity created\n");
+                        std::cout <<"Viscosity created" <<std::endl;
                     } else {
-                        printf("Nothing implemented for %s", arg[0]);
+                        std::cout <<"Nothing implemented for " << arg[0]<< std::endl;
                     }
                 }
             }

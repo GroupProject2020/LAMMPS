@@ -14,7 +14,7 @@ private:
 public:
     ViscosityFourParameterExp(double A, double B, double C, double D);
 
-    double compute_visc(double temperature) override;
+    double compute_visc(double temperature) override final;
 
 };
 

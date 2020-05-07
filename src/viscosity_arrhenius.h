@@ -13,7 +13,7 @@ namespace LAMMPS_NS{
     public:
         ViscosityArrhenius(double C1, double C2);
 
-        double compute_visc(double temperature) override;
+        double compute_visc(double temperature) override final;
 
     };
 };
