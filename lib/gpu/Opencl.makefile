@@ -18,11 +18,12 @@ OBJS = $(OBJ_DIR)/lal_atom.o $(OBJ_DIR)/lal_answer.o \
        $(OBJ_DIR)/lal_device.o $(OBJ_DIR)/lal_base_atomic.o \
        $(OBJ_DIR)/lal_base_charge.o $(OBJ_DIR)/lal_base_ellipsoid.o \
        $(OBJ_DIR)/lal_base_dipole.o $(OBJ_DIR)/lal_base_three.o \
-       $(OBJ_DIR)/lal_base_dpd.o \
+       $(OBJ_DIR)/lal_base_dpd.o $(OBJ_DIR)/lal_base_atomic_sph.o \
        $(OBJ_DIR)/lal_pppm.o $(OBJ_DIR)/lal_pppm_ext.o \
        $(OBJ_DIR)/lal_gayberne.o $(OBJ_DIR)/lal_gayberne_ext.o \
        $(OBJ_DIR)/lal_re_squared.o $(OBJ_DIR)/lal_re_squared_ext.o \
        $(OBJ_DIR)/lal_lj.o $(OBJ_DIR)/lal_lj_ext.o \
+       $(OBJ_DIR)/lal_lj_sph.o $(OBJ_DIR)/lal_lj_sph_ext.o \
        $(OBJ_DIR)/lal_lj96.o $(OBJ_DIR)/lal_lj96_ext.o \
        $(OBJ_DIR)/lal_lj_expand.o $(OBJ_DIR)/lal_lj_expand_ext.o \
        $(OBJ_DIR)/lal_lj_coul.o $(OBJ_DIR)/lal_lj_coul_ext.o \
@@ -80,6 +81,7 @@ KERS = $(OBJ_DIR)/device_cl.h $(OBJ_DIR)/atom_cl.h \
        $(OBJ_DIR)/gayberne_lj_cl.h $(OBJ_DIR)/re_squared_cl.h \
        $(OBJ_DIR)/re_squared_lj_cl.h $(OBJ_DIR)/lj_cl.h $(OBJ_DIR)/lj96_cl.h \
        $(OBJ_DIR)/lj_expand_cl.h $(OBJ_DIR)/lj_coul_cl.h \
+       $(OBJ_DIR)/sph_lj_cl.h \
        $(OBJ_DIR)/lj_coul_long_cl.h $(OBJ_DIR)/lj_dsf_cl.h \
        $(OBJ_DIR)/lj_class2_long_cl.h \
        $(OBJ_DIR)/coul_long_cl.h $(OBJ_DIR)/morse_cl.h \
@@ -144,6 +146,9 @@ $(OBJ_DIR)/lal_device.o: lal_device.cpp lal_device.h $(ALL_H) $(OBJ_DIR)/device_
 $(OBJ_DIR)/lal_base_atomic.o: $(OCL_H) lal_base_atomic.h lal_base_atomic.cpp
 	$(OCL) -o $@ -c lal_base_atomic.cpp
 
+$(OBJ_DIR)/lal_base_atomic_sph.o: $(OCL_H) lal_base_atomic_sph.h lal_base_atomic_sph.cpp
+	$(OCL) -o $@ -c lal_base_atomic_sph.cpp
+
 $(OBJ_DIR)/lal_base_charge.o: $(OCL_H) lal_base_charge.h lal_base_charge.cpp
 	$(OCL) -o $@ -c lal_base_charge.cpp
 
@@ -203,6 +208,15 @@ $(OBJ_DIR)/lal_lj.o: $(ALL_H) lal_lj.h lal_lj.cpp  $(OBJ_DIR)/lj_cl.h $(OBJ_DIR)
 
 $(OBJ_DIR)/lal_lj_ext.o: $(ALL_H) lal_lj.h lal_lj_ext.cpp lal_base_atomic.h
 	$(OCL) -o $@ -c lal_lj_ext.cpp -I$(OBJ_DIR)
+
+$(OBJ_DIR)/sph_lj_cl.h: lal_lj_sph.cu $(PRE1_H)
+	$(BSH) ./geryon/file_to_cstr.sh lj_sph $(PRE1_H) lal_lj_sph.cu $(OBJ_DIR)/sph_lj_cl.h;
+
+$(OBJ_DIR)/lal_lj_sph.o: $(ALL_H) lal_lj_sph.h lal_lj_sph.cpp  $(OBJ_DIR)/sph_lj_cl.h $(OBJ_DIR)/sph_lj_cl.h $(OBJ_DIR)/lal_base_atomic_sph.o
+	$(OCL) -o $@ -c lal_lj_sph.cpp -I$(OBJ_DIR)
+
+$(OBJ_DIR)/lal_lj_sph_ext.o: $(ALL_H) lal_lj_sph.h lal_lj_sph_ext.cpp lal_base_atomic_sph.h
+	$(OCL) -o $@ -c lal_lj_sph_ext.cpp -I$(OBJ_DIR)
 
 $(OBJ_DIR)/lj_tip4p_long_cl.h: lal_lj_tip4p_long.cu $(PRE1_H)
 	$(BSH) ./geryon/file_to_cstr.sh lj_tip4p_long $(PRE1_H) lal_lj_tip4p_long.cu $(OBJ_DIR)/lj_tip4p_long_cl.h;
