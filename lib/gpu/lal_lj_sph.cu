@@ -75,7 +75,7 @@ __kernel void k_lj_sph(const __global numtyp4 *restrict x_,
                        __global acctyp *restrict engv,
                        const int eflag, const int vflag, const int inum,
                        const int nbor_pitch,
-                       const int t_per_atom, int domainDim){ //TODO: arguments?
+                       const int t_per_atom, int domainDim){
   int tid, ii, offset;
   atom_info(t_per_atom,ii,tid,offset);
   double h, ih, ihsq, ihcub, wfd, fi, ci, fj, cj;
@@ -164,9 +164,13 @@ __kernel void k_lj_sph(const __global numtyp4 *restrict x_,
             + delz * (iv.z - jv.z);
 
         // artificial viscosity (Monaghan 1992)
+        double Ti = ei/cvi;
+	double Tj = ej/cvj;
+        double vi = 1.856e-7*exp(4209/Ti + 0.04527*Ti - 3.376e-5*Ti*Ti);
+        double vj = 1.856e-7*exp(4209/Tj + 0.04527*Tj - 3.376e-5*Tj*Tj);
         if (delVdotDelR < 0.) {
           mu = h * delVdotDelR / (rsq + 0.01 * h * h);
-          fvisc = -0.04 * (ci + cj) * mu / (rhoi + rhoj); //TODO: implement the viscosity
+          fvisc = -4/h*(vi/(ci*rhoi)+vj/(cj*rhoj))* (ci + cj) * mu / (rhoi + rhoj);
         } else {
           fvisc = 0.;
         }
@@ -198,7 +202,7 @@ __kernel void k_lj_sph(const __global numtyp4 *restrict x_,
         }
       }
 
-    } // for nbor TODO: write an adapted store_answer function
+    } // for nbor
     store_answers(f,energy,virial,ii,inum,tid,t_per_atom,offset,eflag,vflag,
                   ans,engv);
   } // if ii
@@ -218,7 +222,7 @@ __kernel void k_lj_sph_fast(const __global numtyp4 *restrict x_,
                        __global acctyp *restrict engv,
                        const int eflag, const int vflag, const int inum,
                        const int nbor_pitch,
-                       const int t_per_atom, int domainDim){ //TODO: arguments?
+                       const int t_per_atom, int domainDim){
   int tid, ii, offset;
   atom_info(t_per_atom,ii,tid,offset);
   double h, ih, ihsq, ihcub, wfd, fi, ci, fj, cj;
@@ -315,12 +319,17 @@ __kernel void k_lj_sph_fast(const __global numtyp4 *restrict x_,
             + delz * (iv.z - jv.z);
 
         // artificial viscosity (Monaghan 1992)
+        double Ti = ei/cvi;
+	double Tj = ej/cvj;
+        double vi = 1.856e-7*exp(4209/Ti + 0.04527*Ti - 3.376e-5*Ti*Ti);
+        double vj = 1.856e-7*exp(4209/Tj + 0.04527*Tj - 3.376e-5*Tj*Tj);
         if (delVdotDelR < 0.) {
           mu = h * delVdotDelR / (rsq + 0.01 * h * h);
-          fvisc = -0.04 * (ci + cj) * mu / (rhoi + rhoj); //TODO: implement the viscosity
+          fvisc = -4/h*(vi/(ci*rhoi)+vj/(cj*rhoj))* (ci + cj) * mu / (rhoi + rhoj);
         } else {
           fvisc = 0.;
         }
+
 
         // total pair force & thermal energy increment
         fpair = -imass * jmass * (fi + fj + fvisc) * wfd;
@@ -349,8 +358,9 @@ __kernel void k_lj_sph_fast(const __global numtyp4 *restrict x_,
         }
       }
 
-    } // for nbor TODO: write an adapted store_answer function
+    } // for nbor
     store_answers(f,energy,virial,ii,inum,tid,t_per_atom,offset,eflag,vflag,
                   ans,engv);
   } // if ii
 }
+

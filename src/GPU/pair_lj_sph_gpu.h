@@ -9,9 +9,6 @@ PairStyle(lj/sph/gpu,PairSPHLJGPU)
 
 #else
 
-#ifndef LMP_PAIR_LJ_SPH_GPU_H
-#define LMP_PAIR_LJ_SPH_GPU_H
-
 #include "USER-SPH/pair_sph_lj.h"
 
 namespace LAMMPS_NS {
@@ -22,7 +19,6 @@ public:
     ~PairSPHLJGPU();
     void cpu_compute(int, int, int, int, int *, int *, int **);
     void compute(int, int);
-    void init_style();
     void memory_usage();
 
     enum {GPU_FORCE, GPU_NEIGH, GPU_HYB_NEIGH};

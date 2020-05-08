@@ -127,7 +127,7 @@ namespace LAMMPS_AL {
                        bool &success);
         // --------------------------- TEXTURES -----------------------------
 
-        UCL_Texture cv_tex, e_tex, rho_tex, de_tex, drho_tex;
+        UCL_Texture cv_tex, e_tex, rho_tex, de_tex, drho_tex, vel_tex;
         // --------------------------- TYPE DATA --------------------------
 
         /// cuts.x = cutsq, cuts.y = cut, cuts.z = mass

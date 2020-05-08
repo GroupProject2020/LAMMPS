@@ -1,0 +1,59 @@
+processors         * 1 1 # manually assign processors to spatial regions
+atom_style         meso
+dimension          2
+newton             on
+boundary           f f p
+units              lj
+read_data          data.initial
+
+variable           h equal 0.003
+variable           c equal 10.0 # soundspeed for Tait's EOS
+variable           dt equal 0.1*${h}/${c} # upper limit of timestep based on CFL-like criterion
+variable           nrun equal 1700 # roughly estimate number of timesteps needed for 7.5 seconds
+
+group              bc    type 2 # assign group name "bc" to boundary particles (type 2)
+group              water type 1 # assign group name "water" to water particles (type 1)
+
+set                type 1 meso/e 1000
+set		   type 2 meso/e 41670
+
+# use hybrid pairstyle which does density summation with cutoff ${h} every timestep (1)
+pair_style sph/lj/gpu
+pair_coeff * * 1.0 ${h}
+
+
+fix                gfix water gravity -9.81 vector 0 1 0 # add gravity. This fix also computes potential energy of mass in gravity field.
+fix                2d_fix all enforce2d
+
+variable   tempe 	atom  ((c_e_peratom-1000)/(0.2*4117)+300)
+variable   tempera	atom  ((c_e_peratom-500)/(0.1*4117)+300)
+
+compute            rho_peratom all meso/rho/atom
+compute            e_peratom all meso/e/atom
+compute            esph all reduce sum c_e_peratom
+compute            ke all ke
+variable           etot equal c_esph+c_ke+f_gfix
+
+
+
+
+#                                     adjust nevery | min. allowed dt | max. allowed dt | max. travel distance per dt # // ${dt} ~= CFL criterion 0.1*h/c
+fix                dtfix all dt/reset 1               NULL              ${dt}             0.0005 units box # use a variable timestep
+
+# time-integrate position, velocities, internal energy and density of water particles
+fix                integrate_water_fix water meso
+
+# time-integrate only internal energy and density of boundary particles
+fix                integrate_bc_fix bc meso/stationary
+dump               dump_id all custom 100 dump.lammpstrj id type xs ys zs mass c_rho_peratom c_e_peratom fx fy v_tempe v_tempera
+dump_modify        dump_id first yes
+thermo             10
+thermo_style       custom step ke c_esph v_etot f_gfix press time f_dtfix
+thermo_modify      norm no lost warn
+
+#neigh_modify       every 5 delay 0 check no
+variable           skin equal 0.3*${h}
+neighbor           ${skin} bin # set Verlet list skin distance
+viscosity	   FourParameterExp 1.856e-11 4209 0.04527 -3.376e-5
+
+run                ${nrun}

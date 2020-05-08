@@ -68,6 +68,9 @@ int LJ_SPHT::init(const int ntypes, double **host_cutsq,
     cv_tex.get_texture(*(this->pair_program), "cv_tex");
     cv_tex.bind_float(cv,1);
 
+    vel_tex.get_texture(*(this->pair_program), "vel_tex");
+    vel_tex.bind_float(atom->v,4);
+
     rho.alloc(nlocal, *(this->ucl_device),UCL_READ_ONLY);
     rho_tex.get_texture(*(this->pair_program), "rho_tex");
     rho_tex.bind_float(rho,1);

@@ -112,48 +112,6 @@ void PairSPHLJGPU::compute(int eflag, int vflag)
     }
 }
 
-/* ----------------------------------------------------------------------
-   init specific to this pair style
-------------------------------------------------------------------------- */
-
-void PairSPHLJGPU::init_style()
-{
-    cut_respa = NULL;
-
-    if (force->newton_pair)
-        error->all(FLERR,"Cannot use newton pair with lj/cut/gpu pair style");
-
-    // Repeat cutsq calculation because done after call to init_style
-    double maxcut = -1.0;
-    double cut;
-    for (int i = 1; i <= atom->ntypes; i++) {
-        for (int j = i; j <= atom->ntypes; j++) {
-            if (setflag[i][j] != 0 || (setflag[i][i] != 0 && setflag[j][j] != 0)) {
-                cut = init_one(i,j);
-                cut *= cut;
-                if (cut > maxcut)
-                    maxcut = cut;
-                cutsq[i][j] = cutsq[j][i] = cut;
-            } else
-                cutsq[i][j] = cutsq[j][i] = 0.0;
-        }
-    }
-    double cell_size = sqrt(maxcut) + neighbor->skin;
-
-    int maxspecial=0;
-    if (atom->molecular)
-        maxspecial=atom->maxspecial;
-    int success = lj_sph_gpu_init(atom->ntypes+1, cutsq, cut, mass, atom->nlocal,
-                               atom->nlocal+atom->nghost, 300, maxspecial,
-                               cell_size, gpu_mode, screen);
-    GPU_EXTRA::check_flag(success,error,world);
-
-    if (gpu_mode == GPU_FORCE) {
-        int irequest = neighbor->request(this,instance_me);
-        neighbor->requests[irequest]->half = 0;
-        neighbor->requests[irequest]->full = 1;
-    }
-}
 
 /* ---------------------------------------------------------------------- */
 
