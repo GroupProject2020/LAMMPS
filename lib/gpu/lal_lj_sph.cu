@@ -1,3 +1,14 @@
+// **************************************************************************
+//                                lj_sph.cu
+//                             -------------------
+//
+//  Device code for acceleration of the lj/sph pair style
+//
+// __________________________________________________________________________
+//    This file is part of the LAMMPS Accelerator Library (LAMMPS_AL)
+//
+// ***************************************************************************/
+
 #ifdef NV_KERNEL
 #include "lal_aux_fun1.h"
 #ifndef _DOUBLE_DOUBLE

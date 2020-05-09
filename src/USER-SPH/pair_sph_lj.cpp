@@ -92,7 +92,7 @@ void PairSPHLJ::compute(int eflag, int vflag) {
     LJEOS2(rho[i], e[i], cv[i], &fi, &ci);
     fi /= (rho[i] * rho[i]);
     //printf("fi = %f\n", fi);
-
+    viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
     for (jj = 0; jj < jnum; jj++) {
       j = jlist[jj];
       j &= NEIGHMASK;
@@ -137,12 +137,11 @@ void PairSPHLJ::compute(int eflag, int vflag) {
         // dot product of velocity delta and distance vector
         delVdotDelR = delx * (vxtmp - v[j][0]) + dely * (vytmp - v[j][1])
             + delz * (vztmp - v[j][2]);
-          viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
-          viscosities[j] = viscosity->compute_visc(e[j]/cv[j]);
+
+        viscosities[j] = viscosity->compute_visc(e[j]/cv[j]);
         // artificial viscosity (Monaghan 1992)
         if (delVdotDelR < 0.) {
-          mu = h * delVdotDelR / (rsq + 0.01 * h * h);
-
+            mu = h * delVdotDelR / (rsq + 0.01 * h * h);
             fvisc = -4/h*(viscosities[i]/(ci*rho[i])+viscosities[j]/(cj*rho[j]))* (ci + cj) * mu / (rho[i] + rho[j]);
 
         } else {

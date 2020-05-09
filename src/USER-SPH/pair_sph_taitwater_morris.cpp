@@ -117,7 +117,7 @@ void PairSPHTaitwaterMorris::compute(int eflag, int vflag) {
     tmp = rho[i] / rho0[itype];
     fi = tmp * tmp * tmp;
     fi = B[itype] * (fi * fi * tmp - 1.0) / (rho[i] * rho[i]);
-
+    viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
     for (jj = 0; jj < jnum; jj++) {
       j = jlist[jj];
       j &= NEIGHMASK;
@@ -161,7 +161,6 @@ void PairSPHTaitwaterMorris::compute(int eflag, int vflag) {
         delVdotDelR = delx * velx + dely * vely + delz * velz;
 
         // Morris Viscosity (Morris, 1996)
-        viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
         viscosities[j] = viscosity->compute_visc(e[j]/cv[j]);
         fvisc = 2 * 4/h*(viscosities[i]/(soundspeed[itype]*rho[i])+viscosities[j]/(soundspeed[jtype]*rho[j])) / (rho[i] * rho[j]);
 

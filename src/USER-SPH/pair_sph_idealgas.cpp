@@ -91,7 +91,7 @@ void PairSPHIdealGas::compute(int eflag, int vflag) {
 
     fi = 0.4 * e[i] / imass / rho[i]; // ideal gas EOS; this expression is fi = pressure / rho^2
     ci = sqrt(0.4*e[i]/imass); // speed of sound with heat capacity ratio gamma=1.4
-
+    viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
     for (jj = 0; jj < jnum; jj++) {
       j = jlist[jj];
       j &= NEIGHMASK;
@@ -127,8 +127,8 @@ void PairSPHIdealGas::compute(int eflag, int vflag) {
         // dot product of velocity delta and distance vector
         delVdotDelR = delx * (vxtmp - v[j][0]) + dely * (vytmp - v[j][1])
             + delz * (vztmp - v[j][2]);
-          viscosities[i] = viscosity->compute_visc(e[i]/cv[i]);
-          viscosities[j] = viscosity->compute_visc(e[j]/cv[j]);
+
+        viscosities[j] = viscosity->compute_visc(e[j]/cv[j]);
         // artificial viscosity (Monaghan 1992)
         if (delVdotDelR < 0.) {
           cj = sqrt(0.4*e[j]/jmass);

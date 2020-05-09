@@ -1,3 +1,15 @@
+/* -*- c++ -*- ----------------------------------------------------------
+   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+   http://lammps.sandia.gov, Sandia National Laboratories
+   Steve Plimpton, sjplimp@sandia.gov
+
+   Copyright (2003) Sandia Corporation.  Under the terms of Contract
+   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+   certain rights in this software.  This software is distributed under
+   the GNU General Public License.
+
+   See the README file in the top-level LAMMPS directory.
+------------------------------------------------------------------------- */
 
 #ifndef LAL_LJ_SPH_H
 #define LAL_LJ_SPH_H
@@ -38,7 +50,7 @@ namespace LAMMPS_AL {
                     for (int i=0; i<nall; i++) cv[i]=host_cv[i];
         }
 
-        // Copy rad to device asynchronously
+        // Copy cv to device asynchronously
         inline void add_cv_data() {
             cv.update_device(this->atom->nall(),true);
         }
@@ -51,7 +63,7 @@ namespace LAMMPS_AL {
                     for (int i=0; i<nall; i++) e[i]=host_e[i];
         }
 
-        // Copy rad to device asynchronously
+        // Copy e to device asynchronously
         inline void add_e_data() {
             e.update_device(this->atom->nall(),true);
         }
@@ -65,7 +77,7 @@ namespace LAMMPS_AL {
                     for (int i=0; i<nall; i++) rho[i]=host_rho[i];
         }
 
-        // Copy rad to device asynchronously
+        // Copy rho to device asynchronously
         inline void add_rho_data() {
             rho.update_device(this->atom->nall(),true);
         }
@@ -78,7 +90,7 @@ namespace LAMMPS_AL {
                     for (int i=0; i<nall; i++) de[i]=host_de[i];
         }
 
-        // Copy rad to device asynchronously
+        // Copy de to device asynchronously
         inline void add_de_data() {
             de.update_device(this->atom->nall(),true);
         }
@@ -91,7 +103,7 @@ namespace LAMMPS_AL {
                     for (int i=0; i<nall; i++) drho[i]=host_drho[i];
         }
 
-        // Copy rad to device asynchronously
+        // Copy drho to device asynchronously
         inline void add_drho_data() {
             drho.update_device(this->atom->nall(),true);
         }
